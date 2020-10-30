@@ -1,7 +1,9 @@
 """Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0"""
 
-from box import Box
 import copy
+import os
+
+from box import Box
 
 
 def merge(target: dict, source: dict or list[dict]) -> None:
@@ -40,10 +42,29 @@ def merge(target: dict, source: dict or list[dict]) -> None:
                     target[k].update(v.copy())
             else:
                 target[k] = copy.copy(v)
-    
+
     if isinstance(source, dict):
         inner_merge(target, source)
     else:
         for element in source:
             inner_merge(target, element)
 
+
+def parse_yamls(file_paths: list[str]) -> list[dict]:
+    """Parses a list of YAML files into dicts.
+
+    Args:
+        file_paths (list[str]): List of paths to YAML files. Non-existing files
+            will be skipped / ignored without error.
+
+    Returns:
+        list[dict]: Parsed content of given YAML files.
+    """
+
+    dicts = []
+
+    for path in file_paths:
+        if os.path.isfile(path):
+            dicts.append(Box.from_yaml(filename=path).to_dict())
+
+    return dicts
