@@ -54,17 +54,44 @@ def parse_yamls(file_paths: list[str]) -> list[dict]:
     """Parses a list of YAML files into dicts.
 
     Args:
-        file_paths (list[str]): List of paths to YAML files. Non-existing files
-            will be skipped / ignored without error.
+        file_paths (list[str]):
+            List of paths to YAML files. Non-existing files will be skipped.
 
     Returns:
         list[dict]: Parsed content of given YAML files.
     """
 
     dicts = []
-
     for path in file_paths:
         if os.path.isfile(path):
             dicts.append(Box.from_yaml(filename=path).to_dict())
-
     return dicts
+
+
+def generate_locations(file_paths: list[str]) -> list[str]:
+    """
+    Add `.local.` versions of all given strings if is file.
+    
+
+    Args:
+        file_paths (list[str]):
+            List of file paths. Every one is checked if it is a file.
+
+    Returns:
+        list[str]: 
+            New list that contains only valid paths to files up to the first
+            `.local.` file. If not a single file has been found empty list will
+            be returned.
+    """
+
+    new_list = []
+    for path in file_paths:
+        if os.path.isfile(path):
+            new_list.append(path)
+            last_dot = path.rfind(".")
+            if last_dot != -1:
+                local_version = path[:last_dot] + ".local." + path[last_dot + 1 :]
+                if os.path.isfile(local_version):
+                    new_list.append(local_version)
+                    break
+    return new_list

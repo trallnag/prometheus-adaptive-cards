@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "prometheus-adaptive-cards"
 version = "0.1.0"
-description = "Transforms and forwards alerts from Prometheus Alertmanager to Microsoft Adaptive Cards receivers"
+description = "Transforms and forwards alerts from Prometheus Alertmanager to Adaptive Cards receivers"
 authors = ["Tim Schwenke <tim.and.trallnag+code@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
@@ -9,21 +9,26 @@ repository = "https://github.com/trallnag/prometheus-adaptive-cards"
 keywords = ["prometheus", "alertmanager", "alerting", "microsoft", "teams"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
+loguru = "^0.5.3"
 fastapi = "^0.61.1"
+uvicorn = "^0.12.2"
 requests = "^2.24.0"
+python-box = {extras = ["ruamel.yaml"], version = "^5.2.0"}
+argparse = "^1.4.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.1"
 flake8 = "^3.8.4"
 black = "^20.8b1"
 pytest-cov = "^2.10.1"
+rope = "^0.18.0"
 isort = "^5.6.4"
 pdoc3 = "^0.9.1"
+
+[tool.black]
+line-length = 90
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.black]
-line-length = 90

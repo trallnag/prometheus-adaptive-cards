@@ -159,4 +159,55 @@ def test_parse_yaml(tmp_path):
     assert contents[2] == {"hallo": {"foo": "bar"}}
 
 
+def test_parse_invalid(tmp_path):
+    file1_content = """\
+    - wier
+    tom = 22
+    """
+    file1_path = tmp_path / "file1.yml"
+    file1_path.write_text(file1_content)
+    assert file1_path.read_text() == file1_content
+
+    with pytest.raises(Exception):
+        parsed_content = settings_utils.parse_yamls([file1_path.resolve()])
+
+
+# ==============================================================================
+# generate_locations
+
+
+def test_generate_locations_no_file():
+    assert settings_utils.generate_locations(
+        [
+            "/etc/something/here.yml",
+            "sumtim.abc.foo.bar.feec",
+            "abc",
+        ]
+    ) == []
+
+
+def test_generate_locations_valid(helpers, tmp_path):
+    f1 = tmp_path / "here.yml"
+    f1.write_text(".")
+    (tmp_path / "here.local.yml").write_text(".")
+    
+    f2 = tmp_path / "sumtim.abc.foo.bar.feec"
+    f2.write_text(".")
+    (tmp_path / "sumtim.abc.foo.bar.local.feec").write_text(".")
+    f3 = tmp_path / "abc"
+    f3.write_text(".")
+
+    path_strs = [str(f1.resolve()), str(f2.resolve()), str(f3.resolve())]
+    helpers.pp(path_strs, "path_strs")
+
+    path_strs_with_local = settings_utils.generate_locations(path_strs)
+    helpers.pp(path_strs_with_local, "path_strs_with_local")
+
+    root = tmp_path.resolve()
+    assert path_strs_with_local == [
+        f"{root}/here.yml",
+        f"{root}/here.local.yml",
+    ]
+
+
 # ==============================================================================
