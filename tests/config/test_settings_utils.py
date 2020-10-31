@@ -4,6 +4,7 @@ import pprint
 import textwrap
 
 import pytest
+from box import Box
 
 import prometheus_adaptive_cards.config.settings_utils as settings_utils
 
@@ -177,20 +178,23 @@ def test_parse_invalid(tmp_path):
 
 
 def test_generate_locations_no_file():
-    assert settings_utils.generate_locations(
-        [
-            "/etc/something/here.yml",
-            "sumtim.abc.foo.bar.feec",
-            "abc",
-        ]
-    ) == []
+    assert (
+        settings_utils.generate_locations(
+            [
+                "/etc/something/here.yml",
+                "sumtim.abc.foo.bar.feec",
+                "abc",
+            ]
+        )
+        == []
+    )
 
 
 def test_generate_locations_valid(helpers, tmp_path):
     f1 = tmp_path / "here.yml"
     f1.write_text(".")
     (tmp_path / "here.local.yml").write_text(".")
-    
+
     f2 = tmp_path / "sumtim.abc.foo.bar.feec"
     f2.write_text(".")
     (tmp_path / "sumtim.abc.foo.bar.local.feec").write_text(".")
@@ -208,6 +212,106 @@ def test_generate_locations_valid(helpers, tmp_path):
         f"{root}/here.yml",
         f"{root}/here.local.yml",
     ]
+
+
+# ==============================================================================
+# parse_env_vars
+
+
+def test_parse_env_vars_empty():
+    env_vars = settings_utils.parse_env_vars({})
+    assert len(env_vars) == 0
+
+
+def test_parse_env_vars():
+    env_vars = settings_utils.parse_env_vars(
+        {
+            "PROMAC__LOGGING__LEVEL": "what",
+            "PROMAC__FOO_BAR": "3",
+            "NOTHING": "fe",
+        }
+    )
+    print(env_vars)
+    assert len(env_vars) == 2
+    assert env_vars["logging.level"] == "what"
+    assert env_vars.logging.level == "what"
+    assert env_vars["foo_bar"] == "3"
+    # Opened an issue to support this [here](https://github.com/cdgriffith/Box/issues/176)
+    assert env_vars.get("logging.level") == None
+
+
+# ==============================================================================
+# unflatten
+
+
+def test_unflatten_no_expansion():
+    assert settings_utils._unflatten({"a": 12}) == {"a": 12}
+
+
+def test_unflatten_dotted_path_expansion():
+    assert settings_utils._unflatten({"a.b.c": 12}) == {"a": {"b": {"c": 12}}}
+
+
+def test_unflatten_dotted_path_expansion_multi_overwrite():
+    assert settings_utils._unflatten({"a.b.c": 12, "a.b": 10}) == {"a": {"b": 10}}
+
+
+def test_unflatten_dotted_path_expansion_multi():
+    assert settings_utils._unflatten({"a.b.c": 12, "a.d": 10}) == {
+        "a": {"b": {"c": 12}, "d": 10}
+    }
+
+
+# ==============================================================================
+# cast
+
+
+def test_cast_non_existing_at_str():
+    x = {"foo": {"bar": "hello"}}
+    settings_utils.cast(Box(x, box_dots=True), "foo.bar.zoom", str)
+    assert True
+
+
+def test_cast_non_existing_at_int():
+    x = {"foo": {"bar": 1}}
+    settings_utils.cast(Box(x, box_dots=True), "foo.bar.zoom", str)
+    assert True
+
+
+def test_cast_non_existing_at_boolean():
+    x = {"foo": {"bar": True}}
+    settings_utils.cast(Box(x, box_dots=True), "foo.bar.zoom", str)
+    assert True
+
+
+def test_cast_to_int_successful():
+    x = Box({"foo": {"bar": "32"}}, box_dots=True)
+    settings_utils.cast(x, "foo.bar", int)
+    assert x.foo.bar == 32
+
+
+def test_cast_to_float_successful():
+    x = Box({"foo": {"bar": "32.12"}}, box_dots=True)
+    settings_utils.cast(x, "foo.bar", float)
+    assert x.foo.bar == 32.12
+
+
+def test_cast_to_boolean_successful():
+    x = Box({"foo": {"bar": "true"}}, box_dots=True)
+    settings_utils.cast(x, "foo.bar", bool)
+    assert x.foo.bar == True
+
+
+def test_cast_to_int_unsuccessful():
+    x = Box({"foo": {"bar": "fe"}}, box_dots=True)
+    with pytest.raises(ValueError):
+        settings_utils.cast(x, "foo.bar", int)
+
+
+def test_cast_to_bool_unsuccessful():
+    x = Box({"foo": {"bar": "fe"}}, box_dots=True)
+    settings_utils.cast(x, "foo.bar", bool)
+    assert x.foo.bar is False
 
 
 # ==============================================================================

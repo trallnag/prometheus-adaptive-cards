@@ -4,6 +4,11 @@ import copy
 import os
 
 from box import Box
+from box.exceptions import BoxError, BoxKeyError
+from loguru import logger
+
+# ==============================================================================
+# Stuff for config files
 
 
 def merge(target: dict, source: dict or list[dict]) -> None:
@@ -71,14 +76,14 @@ def parse_yamls(file_paths: list[str]) -> list[dict]:
 def generate_locations(file_paths: list[str]) -> list[str]:
     """
     Add `.local.` versions of all given strings if is file.
-    
+
 
     Args:
         file_paths (list[str]):
             List of file paths. Every one is checked if it is a file.
 
     Returns:
-        list[str]: 
+        list[str]:
             New list that contains only valid paths to files up to the first
             `.local.` file. If not a single file has been found empty list will
             be returned.
@@ -95,3 +100,81 @@ def generate_locations(file_paths: list[str]) -> list[str]:
                     new_list.append(local_version)
                     break
     return new_list
+
+
+# ==============================================================================
+# Stuff for env vars
+
+
+def _unflatten(d: dict) -> dict:
+    """Convert any keys containing dotted paths to nested dicts
+
+    Licensing and attribution: Found [here](https://stackoverflow.com/a/55545369/7391331).
+    Released under the CC BY-SA 4.0 license. All attributions go to [they4kman](https://stackoverflow.com/users/148585/they4kman).
+    """
+
+    base = {}
+
+    for key, value in d.items():
+        root = base
+
+        if "." in key:
+            *parts, key = key.split(".")
+            for part in parts:
+                root.setdefault(part, {})
+                root = root[part]
+
+        root[key] = value
+
+    return base
+
+
+def parse_env_vars(all_env_vars: dict[str, str]) -> dict:
+    """Extracts and transforms given dict of env vars.
+
+    Args:
+        all_env_vars (dict[str, str]): Environment variables.
+
+    Returns:
+        Box:
+            Lowercased. Box instead of dict. Already nested. Can be used just
+            like a dictionary. Read more [here](https://github.com/cdgriffith/Box).
+            Type casting is NOT done here.
+    """
+
+    env_vars = {}
+    for name, value in all_env_vars.items():
+        if name.startswith("PROMAC__") and len(name) > 8:
+            env_vars[name[8:].lower().replace("__", ".")] = value
+
+    return Box(_unflatten(env_vars), box_dots=True)
+
+
+def cast(box: Box, dotted: str, target_type: type) -> None:
+    """Cast given element to given type.
+
+    Args:
+        box (Box): Nested box that will be accessed with `dotted` notation.
+        dotted (str): Dotted notation of field locations.
+        target_type (type): Generally only `str`, `int`, `float`, or `boolean`.
+
+    Raises:
+        ValueError: [description]
+    """
+    try:
+        value = box[dotted]
+        if target_type is bool:
+            if value == "True" or value == "true":
+                box[dotted] = True
+            else:
+                box[dotted] = False
+        else:
+            box[dotted] = target_type(value)
+    except (BoxKeyError, BoxError, TypeError):
+        logger.debug(f"{dotted} not in given box.")
+    except ValueError as e:
+        logger.opt(exception=True).error(f"{dotted} cast to {target_type} failed.")
+        raise ValueError(f"{dotted} cast to {target_type} failed.") from e
+
+
+# ==============================================================================
