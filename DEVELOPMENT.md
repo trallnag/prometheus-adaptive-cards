@@ -15,12 +15,15 @@ as follows:
 
 ### How to add config knob?
 
-### How to add `env_var` support for knob?
+1. Add the config knob to an appropriate location in [CONFIGURATION.md](./CONFIGURATION.md).
+
+### How to add `env_var` and `cli_arg` support for knob?
 
 1. Follow ["How to add config knob?"](#how-to-add-config-knob).
-2. Make sure the flag `env_var` is set in the config schema documentation [here](./CONFIGURATION.md).
-3. If the type of the knob is not `str`, add a cast to `_cast_env_vars`. This
-    will cast to the correct type if the knob exists in the environment
-    variables. If this cast fails an exception will be thrown. If the type is
-    string, skip this step. Important: Only basic casting, no validation! Stuff
-    like "must be URL" is done at the central validation step with Pydantic.
+2. Make sure the flags `env_var` and `cli_arg` are set in the config schema
+    documentation [here](./CONFIGURATION.md).
+3. If the type of the knob is not `str`, add a cast to `_cast_vars`. This
+    will cast to the correct type if the knob exists. If this cast fails an
+    exception will be thrown. If the type is string, skip this step. Important:
+    Only basic casting, no validation! Stuff like "must be URL" is done at
+    the central validation step with Pydantic.

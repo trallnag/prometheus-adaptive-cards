@@ -11,7 +11,7 @@ from loguru import logger
 # Stuff for config files
 
 
-def merge(target: dict, source: dict or list[dict]) -> None:
+def merge(target: dict, source: dict or list[dict]) -> None:  # noqa: C901
     """Deep merge `source` into `target`.
 
     For each k,v in source: if k doesn't exist in target, it is deep copied from
@@ -31,17 +31,17 @@ def merge(target: dict, source: dict or list[dict]) -> None:
     def inner_merge(target: dict, source: dict) -> None:
         for k, v in source.items():
             if type(v) == list:
-                if not k in target:
+                if k not in target:
                     target[k] = copy.deepcopy(v)
                 else:
                     target[k].extend(v)
             elif type(v) == dict:
-                if not k in target:
+                if k not in target:
                     target[k] = copy.deepcopy(v)
                 else:
                     merge(target[k], v)
             elif type(v) == set:
-                if not k in target:
+                if k not in target:
                     target[k] = v.copy()
                 else:
                     target[k].update(v.copy())
@@ -103,10 +103,10 @@ def generate_locations(file_paths: list[str]) -> list[str]:
 
 
 # ==============================================================================
-# Stuff for env vars
+# Stuff for env vars and cli args
 
 
-def _unflatten(d: dict) -> dict:
+def unflatten(d: dict) -> dict:
     """Convert any keys containing dotted paths to nested dicts
 
     Licensing and attribution: Found [here](https://stackoverflow.com/a/55545369/7391331).
@@ -127,27 +127,6 @@ def _unflatten(d: dict) -> dict:
         root[key] = value
 
     return base
-
-
-def parse_env_vars(all_env_vars: dict[str, str]) -> dict:
-    """Extracts and transforms given dict of env vars.
-
-    Args:
-        all_env_vars (dict[str, str]): Environment variables.
-
-    Returns:
-        Box:
-            Lowercased. Box instead of dict. Already nested. Can be used just
-            like a dictionary. Read more [here](https://github.com/cdgriffith/Box).
-            Type casting is NOT done here.
-    """
-
-    env_vars = {}
-    for name, value in all_env_vars.items():
-        if name.startswith("PROMAC__") and len(name) > 8:
-            env_vars[name[8:].lower().replace("__", ".")] = value
-
-    return Box(_unflatten(env_vars), box_dots=True)
 
 
 def cast(box: Box, dotted: str, target_type: type) -> None:

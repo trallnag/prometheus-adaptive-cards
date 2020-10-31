@@ -25,6 +25,7 @@ pytest-cov = "^2.10.1"
 rope = "^0.18.0"
 isort = "^5.6.4"
 pdoc3 = "^0.9.1"
+prettyprinter = "^0.18.0"
 
 [tool.black]
 line-length = 90

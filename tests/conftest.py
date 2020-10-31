@@ -1,18 +1,14 @@
 import pytest
-import pprint
+from prettyprinter import cpprint
 
 
 class Helpers:
-    printer = pprint.PrettyPrinter(width=120)
     @staticmethod
-    def pp(structure: list or dict, description: str or None = None) -> None:
-        """Pretty print"""
-
+    def print_struct(structure, description: str = "No description:") -> None:
         print(f"\n{description}")
-        Helpers.printer.pprint(structure)
+        cpprint(structure)
         print("")
 
-Helpers.pp({"hallo": "fefef"}, "fefefeffewefw")
 
 @pytest.fixture
 def helpers():

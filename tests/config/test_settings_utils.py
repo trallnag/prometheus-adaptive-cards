@@ -1,7 +1,6 @@
 """Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0"""
 
 import pprint
-import textwrap
 
 import pytest
 from box import Box
@@ -66,19 +65,6 @@ def test_merge_with_set():
     pprint.pprint(target)
 
     assert target["set"] == set(["a", "b", "c", "d"])
-
-
-def test_merge_multiple():
-    target = {"a": "1"}
-    source = [
-        {"a": "2"},
-        {"a": "3"},
-    ]
-
-    settings_utils.merge(target=target, source=source)
-    pprint.pprint(target)
-
-    assert target["a"] == "3"
 
 
 def test_merge_multiple():
@@ -170,7 +156,7 @@ def test_parse_invalid(tmp_path):
     assert file1_path.read_text() == file1_content
 
     with pytest.raises(Exception):
-        parsed_content = settings_utils.parse_yamls([file1_path.resolve()])
+        settings_utils.parse_yamls([file1_path.resolve()])
 
 
 # ==============================================================================
@@ -215,49 +201,23 @@ def test_generate_locations_valid(helpers, tmp_path):
 
 
 # ==============================================================================
-# parse_env_vars
-
-
-def test_parse_env_vars_empty():
-    env_vars = settings_utils.parse_env_vars({})
-    assert len(env_vars) == 0
-
-
-def test_parse_env_vars():
-    env_vars = settings_utils.parse_env_vars(
-        {
-            "PROMAC__LOGGING__LEVEL": "what",
-            "PROMAC__FOO_BAR": "3",
-            "NOTHING": "fe",
-        }
-    )
-    print(env_vars)
-    assert len(env_vars) == 2
-    assert env_vars["logging.level"] == "what"
-    assert env_vars.logging.level == "what"
-    assert env_vars["foo_bar"] == "3"
-    # Opened an issue to support this [here](https://github.com/cdgriffith/Box/issues/176)
-    assert env_vars.get("logging.level") == None
-
-
-# ==============================================================================
 # unflatten
 
 
 def test_unflatten_no_expansion():
-    assert settings_utils._unflatten({"a": 12}) == {"a": 12}
+    assert settings_utils.unflatten({"a": 12}) == {"a": 12}
 
 
 def test_unflatten_dotted_path_expansion():
-    assert settings_utils._unflatten({"a.b.c": 12}) == {"a": {"b": {"c": 12}}}
+    assert settings_utils.unflatten({"a.b.c": 12}) == {"a": {"b": {"c": 12}}}
 
 
 def test_unflatten_dotted_path_expansion_multi_overwrite():
-    assert settings_utils._unflatten({"a.b.c": 12, "a.b": 10}) == {"a": {"b": 10}}
+    assert settings_utils.unflatten({"a.b.c": 12, "a.b": 10}) == {"a": {"b": 10}}
 
 
 def test_unflatten_dotted_path_expansion_multi():
-    assert settings_utils._unflatten({"a.b.c": 12, "a.d": 10}) == {
+    assert settings_utils.unflatten({"a.b.c": 12, "a.d": 10}) == {
         "a": {"b": {"c": 12}, "d": 10}
     }
 
@@ -299,7 +259,7 @@ def test_cast_to_float_successful():
 def test_cast_to_boolean_successful():
     x = Box({"foo": {"bar": "true"}}, box_dots=True)
     settings_utils.cast(x, "foo.bar", bool)
-    assert x.foo.bar == True
+    assert x.foo.bar is True
 
 
 def test_cast_to_int_unsuccessful():
