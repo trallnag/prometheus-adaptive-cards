@@ -3,8 +3,8 @@
 import copy
 import os
 
-from box import Box
-from box.exceptions import BoxError, BoxKeyError
+from box import Box, BoxError
+from box.exceptions import BoxKeyError
 from loguru import logger
 
 # ==============================================================================
@@ -69,7 +69,10 @@ def parse_yamls(file_paths: list[str]) -> list[dict]:
     dicts = []
     for path in file_paths:
         if os.path.isfile(path):
-            dicts.append(Box.from_yaml(filename=path).to_dict())
+            try:
+                dicts.append(Box.from_yaml(filename=path).to_dict())
+            except BoxError:
+                pass
     return dicts
 
 

@@ -220,7 +220,7 @@ def test_settings_empty(helpers):
 
 
 def test_settings_singleton_valid_defaults_only(helpers):
-    x = settings.settings_singleton(refresh=True)
+    x = settings.settings_singleton(refresh=True, cli_args=["--config_file", "/"])
 
     helpers.print_struct(x.dict(), "Settings object")
 
@@ -237,6 +237,7 @@ def test_settings_singleton_valid_with_env_vars(helpers):
             "PROMAC__SERVER__PORT": 1,
             "PROMAC__LOGGING__UNSTRUCTURED__COLORIZE": "false",
         },
+        cli_args=["--config_file", "/"],
     )
     helpers.print_struct(x.dict(), "Settings object")
     assert x.logging.unstructured.colorize is False
@@ -247,6 +248,8 @@ def test_settings_singleton_valid_with_cli_args(helpers):
     x = settings.settings_singleton(
         refresh=True,
         cli_args=[
+            "--config_file",
+            "/",
             "--logging.level",
             "ERROR",
             "--server.port",
@@ -262,6 +265,8 @@ def test_settings_singleton_valid_with_cli_args_and_env(helpers):
     x = settings.settings_singleton(
         refresh=True,
         cli_args=[
+            "--config_file",
+            "/",
             "--logging.level",
             "ERROR",
             "--server.port",

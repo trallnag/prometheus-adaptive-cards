@@ -159,6 +159,17 @@ def test_parse_invalid(tmp_path):
         settings_utils.parse_yamls([file1_path.resolve()])
 
 
+def test_parse_yaml_empty(tmp_path):
+    file_content = "---"
+
+    file_path = tmp_path / "file.yml"
+    file_path.write_text(file_content)
+
+    contents = settings_utils.parse_yamls([file_path.resolve()])
+
+    assert contents == []
+
+
 # ==============================================================================
 # generate_locations
 

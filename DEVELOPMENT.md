@@ -13,6 +13,10 @@ as follows:
 3. Read subset of configs from args and merge them into settings box.
 4. Hand over settings box to Pydantic for validation and creating settings.
 
+What is not mentioned in [CONFIGURATION.md](./CONFIGURATION.md) is that PromAC
+also checks `prometheus_adaptive_cards/config` for a config file. This location
+can be used for "default" development settings. Simply uncomment 
+
 ### How to add config knob?
 
 1. Add the config knob to an appropriate location in [CONFIGURATION.md](./CONFIGURATION.md).
