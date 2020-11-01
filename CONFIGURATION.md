@@ -9,12 +9,13 @@ support a subset of all available knobs you can set.
 ## Table of Content <!-- omit in toc --> 
 
 - [Configuration via YAML](#configuration-via-yaml)
-  - [General fields and structure](#general-fields-and-structure)
+  - [Section: `logging`](#section-logging)
+  - [Section: `server`](#section-server)
+  - [Section: `routing`](#section-routing)
   - [Type: `<route>`](#type-route)
   - [Type: `<remove>`](#type-remove)
   - [Type: `<add>`](#type-add)
   - [Type: `<override>`](#type-override)
-  - [Type: `<name_value>`](#type-name_value)
 - [Configuration via Env Vars](#configuration-via-env-vars)
 - [Configuration via CLI Args](#configuration-via-cli-args)
 
@@ -38,8 +39,9 @@ the following documentation schema.
 * `{}` brackets contain info.
 
 The schema is split into multiple sections, but they all go into the same file.
+The codified version of the configuration schema can be found [here](./prometheus_adaptive_cards/config/settings.py).
 
-### General fields and structure
+### Section: `logging`
 
 ```txt
 logging: { env_var | cli_arg }
@@ -53,32 +55,139 @@ logging: { env_var | cli_arg }
     # Passed on 1:1 to Loguru as the log format. Check Loguru docs.
     [ fmt: { <string> | default = '<green>{time:HH:mm:ss}</green> <level>{level}</level> <cyan>{function}</cyan> {message} <dim>{extra}</dim>' } ]
     [ colorize: { <boolean> | default = true } ]
+```
 
-server:
+### Section: `server`
+
+```txt
+server: { env_var | cli_arg }
   [ host: <string> | default = '127.0.0.1' ]
   [ port: <int> | default = 8000 ]
   # Passed on to Uvicorn. Notice that this does not lead to Uvicorn redirecting
   # the requests by removing the root_path. This has to be done by a proxy
   # of your choice.
   [ root_path: <string> | default = '' ]
+```
 
+### Section: `routing`
+
+```txt
 routing:
-  [ filter: <filter> ]
+  [ remove: <remove> ]
   [ add: <add> ]
   [ override: <override> ]
   routes:
-    [ - <route> ]
+    [ - <route> | unique | ... ]
 ```
 
 ### Type: `<route>`
 
+An arbitrary number of routes can be added. Every route starts with an endpoint
+in the PromAC API, goes through a number of transformation steps, get parsed
+through a templating function and finally gets send out to a list of receivers.
+
+```txt
+# The name under which the route should be available. Will be concatenated with
+# the (optional) root path and "generic": `/${root_path}/route/${name}`. Unique.
+name: <string>
+
+# Should all subpaths be interpreted as webhook URLs? This means that in the
+# following string `/${root_path}/route/${name}/${base64_encoded_webhook}` the
+# path beyond `${name}/` will be extracted, decoded and injected into the list
+# of webhooks for this root.
+[ catch: <boolean> | default = true]
+
+[ remove: <remove> ]
+[ add: <add> ]
+[ override: <override> ]
+
+webhooks:
+  [ - <url> | defaults = [] | ... ]
+```
+
+Example(s):
+
+```yml
+name: super-critical
+remove:
+  re_labels:
+    - (^__.*)
+  re_annotations:
+    - (^__.*)
+webhooks:
+  - https://webex.com/what/ever/1234
+```
+
 ### Type: `<remove>`
+
+Removes labels and annotations. You can choose between fixed strings and regex.
+The regex patterns are always unanchored. So if you want to anchor them use `^$`.
+Only regards the names, not values of labels and annotations.
+
+```txt
+annotations:
+  [ - <string> | default = [] | ... ]
+labels:
+  [ - <string> | default = [] | ... ]
+re_annotations:
+  [ - <regex> | default = [] | ... ]
+re_labels:
+  [ - <regex> | default = [] | ... ]
+```
+
+Example(s):
+
+```yml
+annotations:
+  - very_long_annotation
+  - justANumber
+labels:
+  - password
+re_annotations:
+  - (^__.*)
+```
 
 ### Type: `<add>`
 
+Add additional labels and annotations. Existing fields are not overwritten.
+
+```txt
+annotations:
+  [ - <namevalue> | defaults to empty list | ... ]
+labels:
+  [ - <namevalue> | defaults to empty list | ... ]
+```
+
+Example(s):
+
+```yml
+annotations:
+  what_ever_annotation: this is a long test
+  another_one: another one
+labels:
+  from: secret kubernetes cluster
+```
+
 ### Type: `<override>`
 
-### Type: `<name_value>`
+Add additional labels and annotations. Existing fields are overwritten.
+
+```txt
+annotations:
+  [ - <namevalue> | defaults to empty list | ... ]
+labels:
+  [ - <namevalue> | defaults to empty list | ... ]
+```
+
+Example(s):
+
+```yml
+annotations:
+  what_ever_annotation: this is a long test
+  another_one: another one
+labels:
+  from: secret kubernetes cluster
+```
 
 ## Configuration via Env Vars
 

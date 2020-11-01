@@ -16,6 +16,16 @@ as follows:
 ### How to add config knob?
 
 1. Add the config knob to an appropriate location in [CONFIGURATION.md](./CONFIGURATION.md).
+2. Update the Pydantic models accordingly.
+3. If possible, add `env_var` and `cli_arg` flags. Go to this [chapter](#how-to-add-env_var-and-cli_arg-support-for-knob).
+4. Consider adding tests.
+
+### How to change a config knob?
+
+1. Update schema documentation in [CONFIGURATION.md](./CONFIGURATION.md).
+2. Update Pydantic models accordingly.
+3. Update tests.
+4. Follow ["How to add config knob?"](#how-to-add-config-knob).
 
 ### How to add `env_var` and `cli_arg` support for knob?
 

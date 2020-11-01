@@ -188,10 +188,10 @@ def test_generate_locations_valid(helpers, tmp_path):
     f3.write_text(".")
 
     path_strs = [str(f1.resolve()), str(f2.resolve()), str(f3.resolve())]
-    helpers.pp(path_strs, "path_strs")
+    helpers.print_struct(path_strs, "path_strs")
 
     path_strs_with_local = settings_utils.generate_locations(path_strs)
-    helpers.pp(path_strs_with_local, "path_strs_with_local")
+    helpers.print_struct(path_strs_with_local, "path_strs_with_local")
 
     root = tmp_path.resolve()
     assert path_strs_with_local == [

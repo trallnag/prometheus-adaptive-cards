@@ -29,6 +29,8 @@ def _parse_args(args: list[str]) -> Box:
             Type casting is NOT done here. `box_dots` is `True`.
     """
 
+    logger.bind(args_to_parse=args).debug("Parse list of arguments.")
+
     if len(args) % 2 != 0:
         raise ValueError("Number of args must be not odd.")
 
@@ -66,7 +68,12 @@ def _parse_files(
             files have been parsed the returned `dict` will be empty.
     """
 
+    logger.bind(force_file=force_file, lookup_override=lookup_override).debug(
+        "Parse and merge files."
+    )
+
     if force_file:
+        logger.debug(f"Only file '{force_file}' is considered.")
         locations = settings_utils.generate_locations([force_file])
     else:
         locations = settings_utils.generate_locations(
@@ -103,6 +110,8 @@ def _parse_env_vars(all_env_vars: dict[str, str]) -> Box:
             Type casting is NOT done here. `box_dots` is `True`.
     """
 
+    logger.bind(all_env_vars=all_env_vars).debug("Parse env vars.")
+
     env_vars = {}
     for name, value in all_env_vars.items():
         if name.startswith("PROMAC__") and len(name) > 8:
@@ -117,6 +126,8 @@ def _cast_vars(box: Box) -> None:
     Args:
         box (Box): Nested Box with `box_dots=True`.
     """
+
+    logger.debug("Cast vars.")
 
     settings_utils.cast(box, "logging.structured.custom_serializer", bool)
     settings_utils.cast(box, "logging.unstructured.colorize", bool)
@@ -136,6 +147,7 @@ def setup_raw_settings(cli_args: list[str], env: dict[str, str]) -> dict:
     Returns:
         dict: Nested dictionary with all settings unvalidated.
     """
+
     logger.debug("Parse CLI args with argparse.")
     cli_args_box = _parse_args(cli_args)
 
