@@ -320,3 +320,26 @@ def test_settings_singleton_big_example(helpers, tmp_path):
     assert x.logging.level == "ERROR"
     assert x.server.port == 12
     assert len(x.routing.routes) == 2
+
+
+# ==============================================================================
+
+
+def test_add_generic_route_to_settings():
+    x = settings.settings_singleton(refresh=True)
+    settings.add_generic_route_to_settings(x)
+
+    assert x.routing.routes[0].name == "generic"
+    assert len(x.routing.routes) == 1
+
+
+def test_add_generic_route_to_settings_skip():
+    x = settings.settings_singleton(refresh=True)
+    x.routing.routes.append(settings.Route(name="generic"))
+    settings.add_generic_route_to_settings(x)
+
+    assert x.routing.routes[0].name == "generic"
+    assert len(x.routing.routes) == 1
+
+
+# ==============================================================================
