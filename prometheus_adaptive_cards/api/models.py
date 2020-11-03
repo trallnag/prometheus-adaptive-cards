@@ -55,7 +55,9 @@ class Data(BaseModel):
     external_url: AnyUrl = Field(title="External URL", alias="externalURL")
     version: str = Field(title="Version")
     group_key: str = Field(title="Group Key", alias="groupKey")
-    truncated_alerts: int = Field("Truncated Alerts", alias="truncatedAlerts", default=0)
+    truncated_alerts: int = Field(
+        title="Truncated Alerts", alias="truncatedAlerts", default=0
+    )
     group_labels: dict[str, str] = Field(title="Group Labels", alias="groupLabels")
     common_labels: dict[str, str] = Field(title="Common Labels", alias="commonLabels")
     common_annotations: dict[str, str] = Field(

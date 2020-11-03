@@ -45,16 +45,16 @@ The codified version of the configuration schema can be found [here](./prometheu
 
 ```txt
 logging: { env_var | cli_arg }
-  [ level: { <<DEBUG, INFO, WARNING, ERROR, CRITICAL>> | default = INFO } ]
-  [ format: { <<structured, unstructured>> | default = structured } ]
+  [ level: <<DEBUG, INFO, WARNING, ERROR, CRITICAL>> | default = INFO ]
+  [ format: <<structured, unstructured>> | default = structured ]
   structured:
     # By default a custom serializer is used that emits a simpler structured
     # log than Loguru itself by default.
-    [ custom_serializer: { <boolean> | default = true } ]
+    [ custom_serializer: <boolean> | default = true ]
   unstructured:
     # Passed on 1:1 to Loguru as the log format. Check Loguru docs.
-    [ fmt: { <string> | default = '<green>{time:HH:mm:ss}</green> <level>{level}</level> <cyan>{function}</cyan> {message} <dim>{extra}</dim>' } ]
-    [ colorize: { <boolean> | default = true } ]
+    [ fmt: <string> | default = '<green>{time:HH:mm:ss}</green> <level>{level}</level> <cyan>{function}</cyan> {message} <dim>{extra}</dim>' ]
+    [ colorize: <boolean> | default = true ]
 ```
 
 ### Section: `server`
@@ -63,6 +63,7 @@ logging: { env_var | cli_arg }
 server: { env_var | cli_arg }
   [ host: <string> | default = '127.0.0.1' ]
   [ port: <int> | default = 8000 ]
+
   # Passed on to Uvicorn. Notice that this does not lead to Uvicorn redirecting
   # the requests by removing the root_path. This has to be done by a proxy
   # of your choice.
@@ -86,6 +87,8 @@ An arbitrary number of routes can be added. Every route starts with an endpoint
 in the PromAC API, goes through a number of transformation steps, get parsed
 through a templating function and finally gets send out to a list of receivers.
 
+A route with the name `generic` will always exist.
+
 ```txt
 # The name under which the route should be available. Will be concatenated with
 # the (optional) root path and "generic": `/${root_path}/route/${name}`. Unique.
@@ -94,7 +97,7 @@ name: <string>
 # Should all subpaths be interpreted as webhook URLs? This means that in the
 # following string `/${root_path}/route/${name}/${base64_encoded_webhook}` the
 # path beyond `${name}/` will be extracted, decoded and injected into the list
-# of webhooks for this root.
+# of webhooks for this route.
 [ catch: <boolean> | default = true]
 
 [ remove: <remove> ]

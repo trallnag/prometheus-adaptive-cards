@@ -1,9 +1,10 @@
 """Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0"""
 
-from datetime import datetime, timedelta, timezone
-import os
-import json
 import copy
+import json
+import os
+from datetime import datetime, timedelta, timezone
+
 from prometheus_adaptive_cards.api.models import Alert, Data
 
 
@@ -54,16 +55,16 @@ def test_data_based_on_data_payload_simple_01():
         assert data.status == "firing"
         assert data.external_url == "http://1217896f2a1d:9093"
         assert data.version == "4"
-        assert data.group_key == "{}:{alertname=\"WhatEver\"}"
+        assert data.group_key == '{}:{alertname="WhatEver"}'
         assert data.truncated_alerts == 0
         assert data.group_labels == {"alertname": "WhatEver"}
         assert data.common_labels == {
             "alertname": "WhatEver",
             "foo_bar_qux": "foo_moo_zoom",
-            "severity": "warning"
+            "severity": "warning",
         }
         assert data.common_annotations == {
             "description": "A Prometheus job has disappeared\\n  VALUE = 2\\n  LABELS: map[]",
-            "summary": "Prometheus job missing (instance )"
+            "summary": "Prometheus job missing (instance )",
         }
         assert data.alerts[0].status == "firing"

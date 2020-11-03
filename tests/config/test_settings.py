@@ -48,6 +48,8 @@ def test_server():
     x = parse_obj_as(settings.Server, {})
     assert x.host == "127.0.0.1"
     assert x.port == 8000
+    assert x.reload is False
+    assert type(x.reload) == bool
 
 
 # ==============================================================================
@@ -299,7 +301,6 @@ def test_settings_singleton_big_example(helpers, tmp_path):
             - https://www.google.com
             - https://www.google.com
         - name: route2
-
     """
 
     file_path = tmp_path / "file.yml"
@@ -325,18 +326,34 @@ def test_settings_singleton_big_example(helpers, tmp_path):
 # ==============================================================================
 
 
-def test_add_generic_route_to_settings():
+def test_ensure_generic_route_exists():
     x = settings.settings_singleton(refresh=True)
-    settings.add_generic_route_to_settings(x)
+    settings._ensure_generic_route_exists(x)
 
     assert x.routing.routes[0].name == "generic"
     assert len(x.routing.routes) == 1
 
 
-def test_add_generic_route_to_settings_skip():
+def test_ensure_generic_route_exists_skip(tmp_path):
+    file_content = """\
+    routing:
+      routes:
+        - name: generic
+    """
+
+    file_path = tmp_path / "file.yml"
+    file_path.write_text(file_content)
+
+    x = settings.settings_singleton(
+        refresh=True,
+        cli_args=[
+            "--config_file",
+            str(file_path.resolve()),
+        ],
+    )
+
     x = settings.settings_singleton(refresh=True)
-    x.routing.routes.append(settings.Route(name="generic"))
-    settings.add_generic_route_to_settings(x)
+    settings._ensure_generic_route_exists(x)
 
     assert x.routing.routes[0].name == "generic"
     assert len(x.routing.routes) == 1

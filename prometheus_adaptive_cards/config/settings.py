@@ -100,7 +100,6 @@ class Routing(BaseModel):
 
 
 # ==============================================================================
-# Settings
 
 
 class Settings(BaseModel):
@@ -110,6 +109,21 @@ class Settings(BaseModel):
 
 
 _settings = None
+
+
+def _ensure_generic_route_exists(settings: Settings) -> None:
+    """Adds generic route to routes if name not taken.
+
+    Args:
+        settings (Settings): Settings model.
+    """
+    routes = settings.routing.routes
+    route_names = [route.name for route in routes]
+    if "generic" in route_names:
+        logger.debug("Route 'generic' already exists.")
+    else:
+        logger.debug("Add route 'generic' to routes.")
+        routes.append(Route(name="generic"))
 
 
 def settings_singleton(
@@ -138,4 +152,8 @@ def settings_singleton(
     else:
         settings_dict = setup_raw_settings(cli_args, env)
         _settings = parse_obj_as(Settings, settings_dict)
+        _ensure_generic_route_exists(_settings)
         return _settings
+
+
+# ==============================================================================
