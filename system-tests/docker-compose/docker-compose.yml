@@ -1,0 +1,49 @@
+services:
+
+  prometheus:
+    image: quay.io/prometheus/prometheus:v2.22.0
+    volumes:
+      - type: bind
+        source: ./prometheus
+        target: /etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    networks:
+      - promnet
+
+  alertmanager:
+    image: quay.io/prometheus/alertmanager:v0.21.0
+    volumes:
+      - type: bind
+        source: ./alertmanager
+        target: /etc/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    ports:
+      - "9093:9093"
+    networks:
+      - promnet
+
+  httpecho:
+    image: docker pull mendhak/http-https-echo:latest
+    environment: 
+        - HTTP_PORT=8888
+        - HTTPS_PORT=9999
+    ports:
+        - "8888:8888"
+        - "9999:9999"
+    networks:
+      - promnet
+
+  httpechoalt:
+    image: brndnmtthws/nginx-echo-headers
+    ports:
+      - "8080:8080"
+    networks:
+      - promnet
+
+networks:
+  promnet:
+    driver: bridge

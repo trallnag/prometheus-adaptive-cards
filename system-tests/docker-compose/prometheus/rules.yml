@@ -1,0 +1,12 @@
+groups:
+- name: whatever
+  rules:
+    - alert: WhatEver
+      expr: vector(2) > vector(1)
+      for: 30s
+      labels:
+        foo_bar_qux: foo_moo_zoom
+        severity: warning
+      annotations:
+        summary: 'Prometheus job missing (instance {{ $labels.instance }})'
+        description: 'A Prometheus job has disappeared\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}'
