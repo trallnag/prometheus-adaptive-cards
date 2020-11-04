@@ -1,9 +1,10 @@
-"""Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0
-
+"""
 Defines with the help of pydantic models the payload send in from Prometheus
 Alertmanager. The payload is not changed / enhanced whatsoever in this module.
 Follows more or less the official model defined [here](https://github.com/prometheus/alertmanager/blob/master/template/template.go
 and [here](https://prometheus.io/docs/alerting/latest/notifications/).
+
+Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0
 """
 
 from datetime import datetime
@@ -12,7 +13,10 @@ from pydantic import AnyUrl, BaseModel, Field
 
 
 class Alert(BaseModel):
-    """https://github.com/prometheus/alertmanager/blob/master/docs/notifications.md#alert"""
+    """Represents a single Alert object matching the official template.
+
+    https://github.com/prometheus/alertmanager/blob/master/docs/notifications.md#alert
+    """
 
     fingerprint: str = Field(title="Fingerprint")
     status: str = Field(title="Status")
@@ -48,7 +52,10 @@ class Alert(BaseModel):
 
 
 class Data(BaseModel):
-    """https://github.com/prometheus/alertmanager/blob/master/docs/notifications.md#data"""
+    """Represents the Alertmanager payload matching the official template.
+
+    https://github.com/prometheus/alertmanager/blob/master/docs/notifications.md#data
+    """
 
     receiver: str = Field(title="Receiver")
     status: str = Field(title="Status")
@@ -106,7 +113,6 @@ class Data(BaseModel):
                             "investigate_link": "https://domain.com/grafana/d/fdwTIxFMz/container-intra",
                             "summary": "Ratio(Max(Working Set, RSS) / Reservation) [5m Avg] \\u003c 40 %",
                             "title": "Memory: Relativ memory usage low",
-                            "startsAt": "2020-10-11T14:34:11.279383004Z",
                         },
                     },
                     {
@@ -126,7 +132,6 @@ class Data(BaseModel):
                             "investigate_link": "https://domain.com/grafana/d/fdwTIxFMz/container-intra",
                             "summary": "Ratio(Max(Working Set, RSS) / Reservation) [5m Avg] \\u003c 40 %",
                             "title": "Memory: Relativ memory usage low",
-                            "startsAt": "2020-10-11T14:34:11.279393004Z",
                         },
                     },
                 ],
