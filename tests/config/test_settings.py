@@ -48,8 +48,6 @@ def test_server():
     x = parse_obj_as(settings.Server, {})
     assert x.host == "127.0.0.1"
     assert x.port == 8000
-    assert x.reload is False
-    assert type(x.reload) == bool
 
 
 # ==============================================================================
@@ -228,7 +226,7 @@ def test_settings_singleton_valid_defaults_only(helpers):
 
     assert x.logging.level == "INFO"
     assert x.routing.add.annotations == {}
-    assert x.routing.routes == []
+    assert x.routing.routes[0].name == "generic"
 
 
 def test_settings_singleton_valid_with_env_vars(helpers):
@@ -320,7 +318,7 @@ def test_settings_singleton_big_example(helpers, tmp_path):
 
     assert x.logging.level == "ERROR"
     assert x.server.port == 12
-    assert len(x.routing.routes) == 2
+    assert len(x.routing.routes) == 3
 
 
 # ==============================================================================

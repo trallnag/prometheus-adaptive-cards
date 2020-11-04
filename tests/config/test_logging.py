@@ -1,4 +1,4 @@
-"""Copyright 2020 Tim Schwenke. Licensed under the Apache License 2.0"""
+"""Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0"""
 
 import sys
 
@@ -133,8 +133,6 @@ def test_uvicorn_logging_config_override():
             },
         },
     }, "Check the `config.py` in Uvicorn and adapt to changes. Ensure that the override is still correct."
-
-    assert not hasattr(uvicorn.main, "LOGGING_CONFIG")
 
     setup_logging()
 
