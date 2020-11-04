@@ -1,5 +1,6 @@
 import pytest
 from prettyprinter import cpprint
+
 from prometheus_adaptive_cards.config.logger import setup_logging
 from prometheus_adaptive_cards.config.settings import Logging
 
