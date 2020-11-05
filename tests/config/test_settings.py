@@ -217,6 +217,34 @@ def test_settings_empty(helpers):
 
 
 # ==============================================================================
+# route
+
+
+def test_route_invalid_split_by_both():
+    with pytest.raises(ValidationError):
+        _ = parse_obj_as(
+            settings.Route,
+            {
+                "name": "name",
+                "split_by_label": "test",
+                "split_by_annotation": "test",
+            },
+        )
+
+
+def test_route_valid_split_by():
+    x = parse_obj_as(
+        settings.Route,
+        {
+            "name": "name",
+            "split_by_label": "test",
+        },
+    )
+    assert x.split_by_label == "test"
+    assert x.split_by_annotation is None
+
+
+# ==============================================================================
 
 
 def test_settings_singleton_valid_defaults_only(helpers):

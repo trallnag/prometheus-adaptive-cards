@@ -6,7 +6,7 @@ Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0
 """
 
 import re
-from typing import Literal, Pattern
+from typing import Literal, Optional, Pattern, Union
 
 from loguru import logger
 from pydantic import AnyUrl, BaseModel, ValidationError, parse_obj_as, validator
@@ -70,6 +70,8 @@ _PATTERN_FOR_NAME = re.compile(r"^[a-z0-9_\-]*$")
 class Route(BaseModel):
     name: str
     catch: bool = True
+    split_by_annotation: Union[str, None] = None
+    split_by_label: Union[str, None] = None
     remove: Remove = Remove()
     add: Add = Add()
     override: Override = Override()
@@ -80,8 +82,16 @@ class Route(BaseModel):
         if _PATTERN_FOR_NAME.search(v):
             return v
         else:
-            logger.bind(name=v).error("Route name validation failed.")
             raise ValidationError(r"'name' must be match regex `^[A-Za-z0-9_\-]*$`. ")
+
+    @validator("split_by_annotation", "split_by_label")
+    def validate_split_by(cls, v, values):  # noqa
+        if values.get("split_by_annotation") or values.get("split_by_label"):
+            raise ValidationError(
+                "Either 'split_by_annotation' or 'split_by_label' must be set."
+            )
+        else:
+            return v
 
 
 class Routing(BaseModel):

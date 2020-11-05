@@ -100,6 +100,12 @@ name: <string>
 # of webhooks for this route.
 [ catch: <boolean> | default = true]
 
+# If set, the payload will be split and grouped according to the given label or
+# annotation name. All following steps are done for every group individually.
+# Only one of the following two fields may be not null.
+[ split_by_annotation: <string> | default = ~ ]
+[ split_by_label: <string> | default = ~ ]
+
 [ remove: <remove> ]
 [ add: <add> ]
 [ override: <override> ]
@@ -161,16 +167,6 @@ labels:
   [ - <namevalue> | defaults to empty list | ... ]
 ```
 
-Example(s):
-
-```yml
-annotations:
-  what_ever_annotation: this is a long test
-  another_one: another one
-labels:
-  from: secret kubernetes cluster
-```
-
 ### Type: `<override>`
 
 Add additional labels and annotations. Existing fields are overwritten.
@@ -180,16 +176,6 @@ annotations:
   [ - <namevalue> | defaults to empty list | ... ]
 labels:
   [ - <namevalue> | defaults to empty list | ... ]
-```
-
-Example(s):
-
-```yml
-annotations:
-  what_ever_annotation: this is a long test
-  another_one: another one
-labels:
-  from: secret kubernetes cluster
 ```
 
 ## Configuration via Env Vars
