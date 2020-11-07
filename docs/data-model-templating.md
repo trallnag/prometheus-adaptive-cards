@@ -12,27 +12,11 @@ the way fields should be named in Python (for example `starts_at` instead of
 
 ## Schema
 
-The following schema uses (pseudo) Python just because it's really readable.
+The module containing the following classes can be found at `prometheus_adaptive_cards/model.py`.
 
 ```python
-Data:
-    receiver: str
-    status: str
-    external_url: str
-    version: str
-    group_key: str
-    truncated_alerts: int = 0
-    group_labels: dict[str, str]
-    common_labels: dict[str, str]
-    common_annotations: dict[str, str]
-    alerts: list[Alert]
-
-    # FastAPI request object.
-    request: Request
-```
-
-```python
-Alert:
+@dataclass
+class EnhancedAlert:
     fingerprint: str
     status: str
     starts_at: datetime
@@ -40,24 +24,31 @@ Alert:
     generator_url: str
     labels: dict[str, str]
     annotations: dict[str, str]
-
-    # Annotations that are not common annotations.
+    specific_annotations: dict[str, str]
     specific_labels: dict[str, str]
 
-    # Labels that are not common labels.
-    specific_annotations: dict[str, str]
+
+@dataclass
+class EnhancedData:
+    receiver: str
+    status: str
+    external_url: str
+    version: str
+    group_key: str
+    truncated_alerts: int
+    group_labels: dict[str, str]
+    common_labels: dict[str, str]
+    common_annotations: dict[str, str]
+    request: Request
+    alerts: list[EnhancedAlert]
 ```
 
 ## Technical Info
 
-The API model is located at `prometheus_adaptive_cards/api/models.py` and uses
-Pydantic. 
+The model can be separated into an external and internal view. The external view
+uses Pydantic and validated the payload that is handed over to a route endpoint.
+Then the data goes through a preprocessing pipeline as a raw dictionary. At the
+end of the pipeline the data is injected into a set of dataclass objects that
+are handed over to the templating engine.
 
-After receiving it, it goes through a number of preprocessing steps
-(removing, adding, overriding) and the additional fields you can see in
-["Schema"](#schema) are added **not** directly to the model in
-`prometheus_adaptive_cards/preprocessing/enhancement.py`. 
-
-It is in fact first turned into a dict, then the fields are added, then a new
-enhanced model is constructed from this dict. This is due to the way Pydantic
-works. The enhanced model is located in `prometheus_adaptive_cards/preprocessing/enhancement.py`.
+You can find both the internal and external model at `prometheus_adaptive_cards/model.py`.

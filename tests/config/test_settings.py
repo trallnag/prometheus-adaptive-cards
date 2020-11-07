@@ -3,173 +3,322 @@
 from typing import Pattern
 
 import pytest
-from pydantic import ValidationError, parse_obj_as
+from pydantic import ValidationError
 
 import prometheus_adaptive_cards.config.settings as settings
 
 # ==============================================================================
+# Structured
 
 
+@pytest.mark.settings_structured
 def test_structured_valid(helpers):
-    x = parse_obj_as(
-        settings.Structured, {"custom_serializer": True, "does_not_exist": 1}
-    )
+    x = settings.Structured(**{"custom_serializer": True, "does_not_exist": 1})
     helpers.print_struct(x)
+
     assert x.custom_serializer is True
+
     with pytest.raises(AttributeError):
         assert x.does_not_exist == 1
 
+    x = settings.Structured.construct(**{"custom_serializer": True, "does_not_exist": 1})
+    helpers.print_struct(x)
 
+    assert x.custom_serializer is True
+    assert x.does_not_exist == 1
+
+
+@pytest.mark.settings_structured
 def test_structured_invalid():
     with pytest.raises(ValidationError):
-        _ = parse_obj_as(settings.Structured, {"custom_serializer": {"lul": 21}})
+        _ = settings.Structured(**{"custom_serializer": {"lul": 21}})
 
 
+# ==============================================================================
+# Unstructured
+
+
+@pytest.mark.settings_unstructured
 def test_unstructured_valid(helpers):
-    x = parse_obj_as(settings.Unstructured, {"colorize": True})
+    x = settings.Unstructured.construct(**{"colorize": True})
     helpers.print_struct(x)
+
+    assert len(x.fmt) > 1
     assert x.colorize is True
 
 
+# ==============================================================================
+# Logging
+
+
+@pytest.mark.settings_logging
 def test_logging(helpers):
-    x = parse_obj_as(
-        settings.Logging, {"level": "ERROR", "structured": {"custom_serializer": True}}
-    )
+    x = settings.Logging(**{"level": "ERROR", "structured": {"custom_serializer": True}})
     helpers.print_struct(x)
+
     assert x.level == "ERROR"
     assert x.unstructured.colorize is True
     assert x.structured.custom_serializer is True
 
 
 # ==============================================================================
+# Server
 
 
+@pytest.mark.settings_server
 def test_server():
-    x = parse_obj_as(settings.Server, {})
+    x = settings.Server.construct()
     assert x.host == "127.0.0.1"
     assert x.port == 8000
 
 
 # ==============================================================================
+# Remove
 
 
+@pytest.mark.settings_remove
 def test_remove_valid_without_re(helpers):
-    x = parse_obj_as(
-        settings.Remove,
-        {
+    x = settings.Remove.construct(
+        **{
             "annotations": ["whatever", "annotation_name"],
             "labels": ["alertname", "__whatevers"],
-        },
+        }
     )
     helpers.print_struct(x)
+
     assert len(x.annotations) == 2
     assert len(x.labels) == 2
 
 
+@pytest.mark.settings_remove
 def test_remove_valid_without_re_with_casting(helpers):
-    x = parse_obj_as(
-        settings.Remove,
-        {
+    x = settings.Remove(
+        **{
             "annotations": ["whatever", 1],
             "labels": ["alertname", "__whatevers"],
-        },
+        }
     )
     helpers.print_struct(x)
+
     assert len(x.annotations) == 2
     assert isinstance(x.annotations[1], str)
     assert len(x.labels) == 2
 
 
+@pytest.mark.settings_remove
 def test_remove_invalid_without_re():
     with pytest.raises(ValidationError):
-        _ = parse_obj_as(
-            settings.Remove,
-            {
+        _ = settings.Remove(
+            **{
                 "annotations": ["whatever", {"complex": 32423}],
                 "labels": ["alertname", "__whatevers"],
-            },
+            }
         )
 
 
+@pytest.mark.settings_remove
 def test_remove_valid_re(helpers):
-    x = parse_obj_as(
-        settings.Remove,
-        {
+    x = settings.Remove.construct(
+        **{
             "re_annotations": ["(.*)"],
-        },
+        }
     )
     helpers.print_struct(x)
+
+    assert not isinstance(x.re_annotations[0], Pattern)
+
+    x = settings.Remove(
+        **{
+            "re_annotations": ["(.*)"],
+        }
+    )
+    helpers.print_struct(x)
+
     assert isinstance(x.re_annotations[0], Pattern)
 
 
+@pytest.mark.settings_remove
+def test_remove_default():
+    x = settings.Remove.construct()
+    assert x == {
+        "annotations": [],
+        "labels": [],
+        "re_annotations": [],
+        "re_labels": [],
+    }
+
+
 # ==============================================================================
+# Add
 
 
+@pytest.mark.settings_add
 def test_add_valid(helpers):
-    x = parse_obj_as(
-        settings.Add,
-        {
+    x = settings.Add(
+        **{
             "annotations": {
                 "foo": "bar",
                 "fooom": "lol",
             }
-        },
+        }
     )
     helpers.print_struct(x)
+
     assert isinstance(x.annotations, dict)
     assert len(x.annotations) == 2
     assert x.annotations["foo"] == "bar"
+
     with pytest.raises(AttributeError):
         x.annotations.foo == "bar"
 
 
+@pytest.mark.settings_add
+def test_add_default():
+    x = settings.Add.construct()
+    assert x == {
+        "annotations": {},
+        "labels": {},
+    }
+
+
+# ==============================================================================
+# Override
+
+
+@pytest.mark.settings_override
 def test_override_valid(helpers):
-    x = parse_obj_as(
-        settings.Override,
-        {
+    x = settings.Override.construct(
+        **{
             "annotations": {
                 "foo": "bar",
                 "fooom": "lol",
             }
-        },
+        }
     )
     helpers.print_struct(x)
+
     assert isinstance(x.annotations, dict)
     assert len(x.annotations) == 2
     assert x.annotations["foo"] == "bar"
+
     with pytest.raises(AttributeError):
         x.annotations.foo == "bar"
 
 
-def test_route_invalid_name():
+@pytest.mark.settings_override
+def test_override_default():
+    x = settings.Override.construct()
+    assert x == {
+        "annotations": {},
+        "labels": {},
+    }
+
+
+# ==============================================================================
+# SplitBy
+
+
+@pytest.mark.settings_split_by
+def test_split_by_none():
+    route = settings.Route(**{"name": "name", "split_by": None})
+
+    assert route.split_by is None
+
+
+@pytest.mark.settings_split_by
+def test_split_by_annotation():
+    route = settings.Route(
+        **{
+            "name": "name",
+            "split_by": {
+                "target": "annotation",
+                "value": "description",
+            },
+        }
+    )
+
+    assert isinstance(route.split_by, settings.SplitBy)
+
+
+@pytest.mark.settings_split_by
+def test_split_by_label():
+    route = settings.Route(
+        **{
+            "name": "name",
+            "split_by": {
+                "target": "label",
+                "value": "description",
+            },
+        }
+    )
+
+    assert isinstance(route.split_by, settings.SplitBy)
+
+
+@pytest.mark.settings_split_by
+def test_split_by_invalid():
     with pytest.raises(ValidationError):
-        _ = parse_obj_as(
-            settings.Route,
-            {"name": "HALLO ROUTE"},
+        _ = settings.Route(
+            **{
+                "name": "name",
+                "split_by": {
+                    "target": "dwwdw",
+                    "value": "description",
+                },
+            }
         )
 
 
+# ==============================================================================
+# Route
+
+
+@pytest.mark.settings_route
+def test_route_invalid_name():
+    with pytest.raises(ValidationError):
+        _ = settings.Route(**{"name": "HALLO ROUTE"})
+
+
+@pytest.mark.settings_route
 def test_route_valid(helpers):
-    x = parse_obj_as(
-        settings.Route,
-        {
+    x = settings.Route(
+        **{
             "name": "generic_fefef-fef",
             "add": {"labels": {"new": "label"}},
             "remove": {"annotations": ["foo", "bar"]},
             "webhooks": ["https://www.googleapis.com/"],
-        },
+        }
     )
     helpers.print_struct(x)
+
     assert x.name == "generic_fefef-fef"
     assert x.add.labels["new"] == "label"
     assert x.remove.annotations[1] == "bar"
     assert len(x.webhooks) == 1
 
 
+@pytest.mark.settings_route
+def test_route_actions_none(helpers):
+    x = settings.Route(
+        **{
+            "name": "x-fef",
+        }
+    )
+    helpers.print_struct(x)
+
+    assert x.remove is None
+    assert x.add is None
+    assert x.override is None
+
+
+# ==============================================================================
+# Routing
+
+
+@pytest.mark.settings_routing
 def test_routing(helpers):
-    x = parse_obj_as(
-        settings.Routing,
-        {
+    x = settings.Routing(
+        **{
             "add": {"labels": {"new": "label"}},
             "remove": {"annotations": ["foo", "bar"]},
             "routes": [
@@ -182,19 +331,30 @@ def test_routing(helpers):
                     "webhooks": ["https://www.googleapis.com/"],
                 },
             ],
-        },
+        }
     )
     helpers.print_struct(x)
+
     assert x.add.labels["new"] == "label"
     assert x.remove.annotations[1] == "bar"
     assert x.routes[0].remove.annotations[1] == "bar"
 
 
+@pytest.mark.settings_routing
+def test_routing_actions_none(helpers):
+    x = settings.Routing()
+    helpers.print_struct(x)
+
+    assert x.remove is None
+    assert x.add is None
+    assert x.override is None
+
+
+@pytest.mark.settings_routing
 def test_routing_invalid_non_unique_route_names():
     with pytest.raises(ValidationError):
-        _ = parse_obj_as(
-            settings.Routing,
-            {
+        _ = settings.Routing(
+            **{
                 "routes": [
                     {
                         "name": "generic_fefef",
@@ -205,58 +365,38 @@ def test_routing_invalid_non_unique_route_names():
                         "webhooks": ["https://www.googleapis.com/"],
                     },
                 ]
-            },
+            }
         )
 
 
+# ==============================================================================
+# Settings
+
+
+@pytest.mark.settings
 def test_settings_empty(helpers):
-    x = parse_obj_as(settings.Settings, {})
+    x = settings.Settings()
     helpers.print_struct(x)
     assert x.logging.level == "INFO"
-    assert x.routing.add.annotations == {}
+    assert x.routing.add is None
 
 
 # ==============================================================================
-# route
+# settings_singleton
 
 
-def test_route_invalid_split_by_both():
-    with pytest.raises(ValidationError):
-        _ = parse_obj_as(
-            settings.Route,
-            {
-                "name": "name",
-                "split_by_label": "test",
-                "split_by_annotation": "test",
-            },
-        )
-
-
-def test_route_valid_split_by():
-    x = parse_obj_as(
-        settings.Route,
-        {
-            "name": "name",
-            "split_by_label": "test",
-        },
-    )
-    assert x.split_by_label == "test"
-    assert x.split_by_annotation is None
-
-
-# ==============================================================================
-
-
+@pytest.mark.settings_singleton
 def test_settings_singleton_valid_defaults_only(helpers):
     x = settings.settings_singleton(refresh=True, cli_args=["--config_file", "/"])
 
     helpers.print_struct(x.dict(), "Settings object")
 
     assert x.logging.level == "INFO"
-    assert x.routing.add.annotations == {}
+    assert x.routing.add is None
     assert x.routing.routes[0].name == "generic"
 
 
+@pytest.mark.settings_singleton
 def test_settings_singleton_valid_with_env_vars(helpers):
     x = settings.settings_singleton(
         refresh=True,
@@ -272,6 +412,7 @@ def test_settings_singleton_valid_with_env_vars(helpers):
     assert x.server.port == 1
 
 
+@pytest.mark.settings_singleton
 def test_settings_singleton_valid_with_cli_args(helpers):
     x = settings.settings_singleton(
         refresh=True,
@@ -289,6 +430,7 @@ def test_settings_singleton_valid_with_cli_args(helpers):
     assert x.server.port == 12
 
 
+@pytest.mark.settings_singleton
 def test_settings_singleton_valid_with_cli_args_and_env(helpers):
     x = settings.settings_singleton(
         refresh=True,
@@ -307,6 +449,7 @@ def test_settings_singleton_valid_with_cli_args_and_env(helpers):
     assert x.server.port == 12
 
 
+@pytest.mark.settings_singleton
 def test_settings_singleton_big_example(helpers, tmp_path):
     file_content = """\
     logging:
@@ -350,8 +493,10 @@ def test_settings_singleton_big_example(helpers, tmp_path):
 
 
 # ==============================================================================
+# ensure_generic_route_exists
 
 
+@pytest.mark.settings_ensure_generic_route_exists
 def test_ensure_generic_route_exists():
     x = settings.settings_singleton(refresh=True)
     settings._ensure_generic_route_exists(x)
@@ -360,6 +505,7 @@ def test_ensure_generic_route_exists():
     assert len(x.routing.routes) == 1
 
 
+@pytest.mark.settings_ensure_generic_route_exists
 def test_ensure_generic_route_exists_skip(tmp_path):
     file_content = """\
     routing:
