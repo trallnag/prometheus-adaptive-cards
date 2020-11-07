@@ -2,9 +2,17 @@
 
 import pytest
 from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
-import prometheus_adaptive_cards.api.app as app
+import prometheus_adaptive_cards.app as app
 from prometheus_adaptive_cards.config.settings import Route, Routing
+
+
+def test_route_health():
+    client = TestClient(app.create_fastapi_base())
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"message": "OK", "symbol": "👌"}
 
 
 def test_setup_routes_number_of_routes():

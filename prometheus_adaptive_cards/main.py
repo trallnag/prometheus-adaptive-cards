@@ -6,22 +6,22 @@ import sys
 import uvicorn
 from loguru import logger
 
-from prometheus_adaptive_cards.api.app import create_fastapi_base
-from prometheus_adaptive_cards.config.logger import setup_logging
-from prometheus_adaptive_cards.config.settings import settings_singleton
+from .app import create_fastapi_base, setup_routes
+from .config import settings_singleton, setup_logging
 
 
 def main(cli_args: list[str], env: dict[str, str]):
-    # Intermediate logging settings to have nice logs during settings setup.
     setup_logging()
 
     settings = settings_singleton(cli_args, env, refresh=True)
 
-    # Configure logging.
     setup_logging(logging_settings=settings.logging)
 
+    logger.bind(settings=settings.dict()).info("Running PromAC with attached settings.")
+
     fastapi_app = create_fastapi_base()
-    logger.error("Hallo")
+    setup_routes(fastapi_app, settings.routing)
+
     uvicorn.run(
         fastapi_app,
         host=settings.server.host,
