@@ -10,12 +10,12 @@
         "severity": "warning"
       },
       "annotations": {
-        "description": "A Prometheus job has disappeared\\n  VALUE = 2\\n  LABELS: map[]",
+        "description": "A Prometheus job has disappe",
         "summary": "Prometheus job missing (instance )"
       },
       "startsAt": "2020-11-03T17:51:36.14925565Z",
       "endsAt": "0001-01-01T00:00:00Z",
-      "generatorURL": "http://9e6d80bea9ef:9090/graph?g0.expr=vector%282%29+%3E+vector%281%29&g0.tab=1",
+      "generatorURL": "http://9e6d80bea9ef:9090/graph?g0.",
       "fingerprint": "d57ff78af6ac95e8"
     }
   ],
@@ -28,7 +28,7 @@
     "severity": "warning"
   },
   "commonAnnotations": {
-    "description": "A Prometheus job has disappeared\\n  VALUE = 2\\n  LABELS: map[]",
+    "description": "A Prometheus job has disappeareS: map[]",
     "summary": "Prometheus job missing (instance )"
   },
   "externalURL": "http://1217896f2a1d:9093",

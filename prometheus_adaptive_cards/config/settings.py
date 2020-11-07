@@ -6,7 +6,7 @@ Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0
 """
 
 import re
-from typing import Literal, Optional, Pattern, Union
+from typing import Literal, Optional, Pattern
 
 from loguru import logger
 from pydantic import AnyUrl, BaseModel, ValidationError, parse_obj_as, validator
@@ -64,17 +64,23 @@ class Override(BaseModel):
     labels: dict[str, str] = {}
 
 
+class SplitBy(BaseModel):
+    target: Literal["annotation", "label"]
+    value: str
+
+
 _PATTERN_FOR_NAME = re.compile(r"^[a-z0-9_\-]*$")
 
 
 class Route(BaseModel):
     name: str
     catch: bool = True
-    split_by_annotation: Union[str, None] = None
-    split_by_label: Union[str, None] = None
-    remove: Remove = Remove()
-    add: Add = Add()
-    override: Override = Override()
+    remove: Optional[Remove]
+    add: Optional[Add]
+    override: Optional[Override]
+    split_by: Optional[SplitBy]
+    extract_webhooks: list[str] = []
+    extract_webhooks_re: list[Pattern] = []
     webhooks: list[AnyUrl] = []
 
     @validator("name")
@@ -84,20 +90,11 @@ class Route(BaseModel):
         else:
             raise ValidationError(r"'name' must be match regex `^[A-Za-z0-9_\-]*$`. ")
 
-    @validator("split_by_annotation", "split_by_label")
-    def validate_split_by(cls, v, values):  # noqa
-        if values.get("split_by_annotation") or values.get("split_by_label"):
-            raise ValidationError(
-                "Either 'split_by_annotation' or 'split_by_label' must be set."
-            )
-        else:
-            return v
-
 
 class Routing(BaseModel):
-    remove: Remove = Remove()
-    add: Add = Add()
-    override: Override = Override()
+    remove: Optional[Remove]
+    add: Optional[Add]
+    override: Optional[Override]
     routes: list[Route] = []
 
     @validator("routes")
@@ -116,6 +113,9 @@ class Settings(BaseModel):
     logging: Logging = Logging()
     server: Server = Server()
     routing: Routing = Routing()
+
+
+# ==============================================================================
 
 
 _settings = None
