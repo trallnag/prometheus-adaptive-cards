@@ -7,6 +7,7 @@ import pytest
 
 import prometheus_adaptive_cards.preprocessing.actions as actions
 from prometheus_adaptive_cards.config.settings import Remove, Route, Routing
+from prometheus_adaptive_cards.model import Alert, AlertGroup
 
 # ==============================================================================
 
@@ -15,35 +16,41 @@ from prometheus_adaptive_cards.config.settings import Remove, Route, Routing
 def test_remove():
     target = "labels"
     keys = ["tim", "hans", "ute", "furz", "soda"]
-    data = {
-        f"common_{target}": {
-            "tim": "schwenke",
-            "hans": "meier",
-        },
-        "alerts": [
-            {
-                target: {
-                    "tim": "schwenke",
-                    "hans": "meier",
-                    "ronald": "fritz",
-                    "ute": "schneider",
-                }
+    alert_group = AlertGroup.construct(
+        **{
+            f"common_{target}": {
+                "tim": "schwenke",
+                "hans": "meier",
             },
-            {
-                target: {
-                    "tim": "schwenke",
-                    "hans": "meier",
-                    "furz": "ernst",
-                }
-            },
-        ],
-    }
+            "alerts": [
+                Alert.construct(
+                    **{
+                        target: {
+                            "tim": "schwenke",
+                            "hans": "meier",
+                            "ronald": "fritz",
+                            "ute": "schneider",
+                        }
+                    }
+                ),
+                Alert.construct(
+                    **{
+                        target: {
+                            "tim": "schwenke",
+                            "hans": "meier",
+                            "furz": "ernst",
+                        }
+                    }
+                ),
+            ],
+        }
+    )
 
-    actions._remove(target, keys, data)
-    assert data == {
-        f"common_{target}": {},
-        "alerts": [{target: {"ronald": "fritz"}}, {target: {}}],
-    }
+    actions._remove(target, keys, alert_group)
+
+    assert alert_group.__dict__[f"common_{target}"] == {}
+    assert alert_group.alerts[0].__dict__[target] == {"ronald": "fritz"}
+    assert alert_group.alerts[1].__dict__[target] == {}
 
 
 # ==============================================================================
@@ -53,35 +60,41 @@ def test_remove():
 def test_remove_re():
     target = "labels"
     keys = [re.compile("^(tim|hans|ute|furz|soda)$")]
-    data = {
-        f"common_{target}": {
-            "tim": "schwenke",
-            "hans": "meier",
-        },
-        "alerts": [
-            {
-                target: {
-                    "tim": "schwenke",
-                    "hans": "meier",
-                    "ronald": "fritz",
-                    "ute": "schneider",
-                }
+    alert_group = AlertGroup.construct(
+        **{
+            f"common_{target}": {
+                "tim": "schwenke",
+                "hans": "meier",
             },
-            {
-                target: {
-                    "tim": "schwenke",
-                    "hans": "meier",
-                    "furz": "ernst",
-                }
-            },
-        ],
-    }
+            "alerts": [
+                Alert.construct(
+                    **{
+                        target: {
+                            "tim": "schwenke",
+                            "hans": "meier",
+                            "ronald": "fritz",
+                            "ute": "schneider",
+                        }
+                    }
+                ),
+                Alert.construct(
+                    **{
+                        target: {
+                            "tim": "schwenke",
+                            "hans": "meier",
+                            "furz": "ernst",
+                        }
+                    }
+                ),
+            ],
+        }
+    )
 
-    actions._remove_re(target, keys, data)
-    assert data == {
-        f"common_{target}": {},
-        "alerts": [{target: {"ronald": "fritz"}}, {target: {}}],
-    }
+    actions._remove_re(target, keys, alert_group)
+
+    assert alert_group.__dict__[f"common_{target}"] == {}
+    assert alert_group.alerts[0].__dict__[target] == {"ronald": "fritz"}
+    assert alert_group.alerts[1].__dict__[target] == {}
 
 
 # ==============================================================================
@@ -89,189 +102,171 @@ def test_remove_re():
 
 @pytest.mark.actions_wrapped_remove
 def test_wrapped_remove_none_none():
-    data = {
-        f"common_labels": {
+    alert_group = AlertGroup.construct(
+        common_labels={
             "tim": "schwenke",
             "hans": "meier",
         },
-        "alerts": [
-            {
-                "labels": {
+        alerts=[
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                     "hans": "meier",
                     "ronald": "fritz",
                     "ute": "schneider",
                 }
-            },
-            {
-                "labels": {
+            ),
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                     "hans": "meier",
                     "furz": "ernst",
                 }
-            },
+            ),
         ],
+    )
+
+    a = None
+    b = None
+
+    actions.wrapped_remove(a, b, alert_group)
+
+    assert alert_group.common_labels == {
+        "tim": "schwenke",
+        "hans": "meier",
     }
-    r1 = None
-    r2 = None
-    actions.wrapped_remove(r1, r2, data)
-    assert data == {
-        f"common_labels": {
-            "tim": "schwenke",
-            "hans": "meier",
-        },
-        "alerts": [
-            {
-                "labels": {
-                    "tim": "schwenke",
-                    "hans": "meier",
-                    "ronald": "fritz",
-                    "ute": "schneider",
-                }
-            },
-            {
-                "labels": {
-                    "tim": "schwenke",
-                    "hans": "meier",
-                    "furz": "ernst",
-                }
-            },
-        ],
+
+    assert alert_group.alerts[0].labels == {
+        "tim": "schwenke",
+        "hans": "meier",
+        "ronald": "fritz",
+        "ute": "schneider",
+    }
+    assert alert_group.alerts[1].labels == {
+        "tim": "schwenke",
+        "hans": "meier",
+        "furz": "ernst",
     }
 
 
 @pytest.mark.actions_wrapped_remove
-def test_wrapped_remove_r1_none():
-    data = {
-        f"common_labels": {
+def test_wrapped_remove_a_none():
+    alert_group = AlertGroup.construct(
+        common_labels={
             "tim": "schwenke",
             "hans": "meier",
         },
-        "alerts": [
-            {
-                "labels": {
+        alerts=[
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                     "hans": "meier",
                     "ronald": "fritz",
                     "ute": "schneider",
                 }
-            },
-            {
-                "labels": {
+            ),
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                     "hans": "meier",
                     "furz": "ernst",
                 }
-            },
+            ),
         ],
-    }
-    r1 = Remove(re_labels=[re.compile("^(tim|hans|ute|furz|soda)$")])
-    r2 = None
-    actions.wrapped_remove(r1, r2, data)
-    assert data == {
-        f"common_labels": {},
-        "alerts": [
-            {
-                "labels": {
-                    "ronald": "fritz",
-                }
-            },
-            {"labels": {}},
-        ],
-    }
+    )
+
+    a = Remove(re_labels=[re.compile("^(tim|hans|ute|furz|soda)$")])
+    b = None
+
+    actions.wrapped_remove(a, b, alert_group)
+
+    assert alert_group.common_labels == {}
+    assert alert_group.alerts[0].labels == {"ronald": "fritz"}
+    assert alert_group.alerts[1].labels == {}
 
 
 @pytest.mark.actions_wrapped_remove
-def test_wrapped_remove_none_r2():
-    data = {
-        f"common_labels": {
+def test_wrapped_remove_none_b():
+    alert_group = AlertGroup.construct(
+        common_labels={
             "tim": "schwenke",
             "hans": "meier",
         },
-        "alerts": [
-            {
-                "labels": {
+        alerts=[
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                     "hans": "meier",
                     "ronald": "fritz",
                     "ute": "schneider",
                 }
-            },
-            {
-                "labels": {
+            ),
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                     "hans": "meier",
                     "furz": "ernst",
                 }
-            },
+            ),
         ],
-    }
-    r1 = None
-    r2 = Remove(re_labels=[re.compile("^(tim|hans|ute|furz|soda)$")])
-    actions.wrapped_remove(r1, r2, data)
-    assert data == {
-        f"common_labels": {},
-        "alerts": [
-            {
-                "labels": {
-                    "ronald": "fritz",
-                }
-            },
-            {"labels": {}},
-        ],
-    }
+    )
+
+    a = None
+    b = Remove(re_labels=[re.compile("^(tim|hans|ute|furz|soda)$")])
+
+    actions.wrapped_remove(a, b, alert_group)
+
+    assert alert_group.common_labels == {}
+    assert alert_group.alerts[0].labels == {"ronald": "fritz"}
+    assert alert_group.alerts[1].labels == {}
 
 
 @pytest.mark.actions_wrapped_remove
-def test_wrapped_remove_r1_r2():
-    data = {
-        "common_annotations": {},
-        "common_labels": {
+def test_wrapped_remove_a_b():
+    alert_group = AlertGroup.construct(
+        common_annotations={},
+        common_labels={
             "tim": "schwenke",
             "hans": "meier",
         },
-        "alerts": [
-            {
-                "annotations": {},
-                "labels": {
+        alerts=[
+            Alert.construct(
+                annotations={},
+                labels={
                     "tim": "schwenke",
                     "hans": "meier",
                     "ronald": "fritz",
                     "ute": "schneider",
                 },
-            },
-            {
-                "annotations": {},
-                "labels": {
+            ),
+            Alert.construct(
+                annotations={},
+                labels={
                     "tim": "schwenke",
                     "hans": "meier",
                     "furz": "ernst",
                 },
-            },
+            ),
         ],
-    }
-    r1 = Remove(
+    )
+
+    a = Remove(
         labels=["ute", "tim", "furz"],
         annotations=["ute", "tim", "furz"],
     )
-    r2 = Remove(
+    b = Remove(
         re_annotations=[re.compile("^(tim|hans)$")],
         re_labels=[re.compile("^(tim|hans)$")],
     )
-    actions.wrapped_remove(r1, r2, data)
-    assert data == {
-        "common_annotations": {},
-        "common_labels": {},
-        "alerts": [
-            {
-                "annotations": {},
-                "labels": {
-                    "ronald": "fritz",
-                },
-            },
-            {"annotations": {}, "labels": {}},
-        ],
-    }
+
+    actions.wrapped_remove(a, b, alert_group)
+
+    assert alert_group.common_annotations == {}
+    assert alert_group.common_labels == {}
+    assert alert_group.alerts[0].annotations == {}
+    assert alert_group.alerts[0].labels == {"ronald": "fritz"}
+    assert alert_group.alerts[1].annotations == {}
+    assert alert_group.alerts[1].labels == {}
 
 
 # ==============================================================================

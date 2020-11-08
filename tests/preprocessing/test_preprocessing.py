@@ -7,12 +7,11 @@ from prometheus_adaptive_cards.config.settings import (
     Route,
     Routing,
 )
+from prometheus_adaptive_cards.model import Alert, AlertGroup
 from prometheus_adaptive_cards.preprocessing.preprocessing import preprocess
 
 
-def test_preprocess():
-    request = None
-
+def test_preprocess(helpers):
     routing = Routing(
         remove=Remove(
             annotations=["vw", "audi"],
@@ -88,7 +87,43 @@ def test_preprocess():
         "truncatedAlerts": 0,
     }
 
-    alertgroup = preprocess(request, routing, route, payload)[0]
+    alert_group = AlertGroup.construct(
+        group_labels={"alertname": "WhatEver"},
+        common_labels={"heinz": "meier", "__meta": "x", "severity": "warning"},
+        common_annotations={
+            "vw": "x",
+        },
+        alerts=[
+            Alert.construct(
+                labels={
+                    "heinz": "meier",
+                    "__meta": "x",
+                    "severity": "warning",
+                    "yung": "barn",
+                },
+                annotations={
+                    "vw": "x",
+                    "audi": "x",
+                    "yung": "barn",
+                },
+            ),
+            Alert.construct(
+                labels={
+                    "heinz": "meier",
+                    "simon": "fart",
+                    "__meta": "x",
+                    "severity": "warning",
+                },
+                annotations={
+                    "vw": "x",
+                },
+            ),
+        ],
+    )
+
+    alertgroup = preprocess(routing, route, alert_group)[0]
+
+    helpers.print_struct(alertgroup)
 
     assert alertgroup.common_labels == {
         "severity": "warning",

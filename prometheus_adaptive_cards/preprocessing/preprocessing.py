@@ -1,50 +1,55 @@
 """Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0"""
 
-from fastapi import Request
-
 from prometheus_adaptive_cards.config import Route, Routing
-from prometheus_adaptive_cards.model import Alert, AlertGroup
+from prometheus_adaptive_cards.model import (
+    AlertGroup,
+    EnhancedAlert,
+    EnhancedAlertGroup,
+)
 
 from .actions import wrapped_add, wrapped_override, wrapped_remove
 from .splitting import split
-from .utils import add_specific, convert_to_snake_case
+from .utils import add_specific
 
 
 def preprocess(
-    request: Request, routing: Routing, route: Route, data: dict
-) -> list[AlertGroup]:
-    """Preprocess payload data and turn it a set of objects ready for templating.
+    routing: Routing, route: Route, alert_group: AlertGroup
+) -> list[EnhancedAlertGroup]:
+    """Preprocess payload from Alertmanager.
 
     Args:
-        request (Request): The request the data is part of.
         routing (Routing): Routing related settings.
         route (Route): Route related settings.
-        data (dict): Alertmanager payload.
+        data (AlertGroup): Alertmanager payload.
 
     Returns:
-        list[AlertGroup]: List of enhanced data objects. If splitting is not
-            used this list will always contain a single element.
+        list[EnhancedAlertGroup]: List of one or more alert group. List will
+            only contain more than one if the `split_by` feature is used.
     """
 
-    convert_to_snake_case(data)
+    wrapped_remove(routing.remove, route.remove, alert_group)
+    wrapped_add(routing.add, route.add, alert_group)
+    wrapped_override(routing.override, route.override, alert_group)
 
-    data["request"] = request
-
-    wrapped_remove(routing.remove, route.remove, data)
-    wrapped_add(routing.add, route.add, data)
-    wrapped_override(routing.override, route.override, data)
-
-    datas = (
-        split(route.split_by.target, route.split_by.value, data)
+    alert_groups = (
+        split(route.split_by.target, route.split_by.value, alert_group)
         if route.split_by
-        else [data]
+        else [alert_group]
     )
 
-    alert_groups = []
+    enhanced_alert_groups = []
 
-    for data in datas:
-        add_specific(data)
-        data["alerts"] = [Alert(**alert) for alert in data["alerts"]]
-        alert_groups.append(AlertGroup(**data))
+    for alert_group in alert_groups:
+        add_specific(alert_group)
 
-    return alert_groups
+        enhanced_alerts = [
+            EnhancedAlert.construct(**alert.dict()) for alert in alert_group.alerts
+        ]
+        del alert_group.alerts
+
+        enhanced_alert_group = EnhancedAlertGroup.construct(**alert_group.dict())
+        enhanced_alert_group.alerts = enhanced_alerts
+
+        enhanced_alert_groups.append(enhanced_alert_group)
+
+    return enhanced_alert_groups

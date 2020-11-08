@@ -7,60 +7,56 @@ import pytest
 
 import prometheus_adaptive_cards.preprocessing.actions as actions
 from prometheus_adaptive_cards.config.settings import Add, Route, Routing
+from prometheus_adaptive_cards.model import Alert, AlertGroup
 
 # ==============================================================================
 
 
 @pytest.mark.actions_add
 def test_add():
-    target = "labels"
-    items = {
-        "tim": "schwonkel",
-        "ute": "freier",
-        "frank": "sohn",
-    }
-    data = {
-        f"common_{target}": {
+    alert_group = AlertGroup.construct(
+        common_labels={
             "tim": "schwenke",
         },
-        "alerts": [
-            {
-                target: {
+        alerts=[
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                     "ute": "meier",
                     "frank": "sohn",
                 }
-            },
-            {
-                target: {
+            ),
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                 }
-            },
+            ),
         ],
-    }
+    )
 
-    actions._add(target, items, data)
-    assert data == {
-        f"common_{target}": {
-            "tim": "schwenke",
+    actions._add(
+        "labels",
+        {
+            "tim": "schwonkel",
+            "ute": "freier",
             "frank": "sohn",
         },
-        "alerts": [
-            {
-                target: {
-                    "tim": "schwenke",
-                    "ute": "meier",
-                    "frank": "sohn",
-                }
-            },
-            {
-                target: {
-                    "tim": "schwenke",
-                    "ute": "freier",
-                    "frank": "sohn",
-                }
-            },
-        ],
+        alert_group,
+    )
+
+    assert alert_group.common_labels == {
+        "tim": "schwenke",
+        "frank": "sohn",
+    }
+    assert alert_group.alerts[0].labels == {
+        "tim": "schwenke",
+        "ute": "meier",
+        "frank": "sohn",
+    }
+    assert alert_group.alerts[1].labels == {
+        "tim": "schwenke",
+        "ute": "freier",
+        "frank": "sohn",
     }
 
 
@@ -69,78 +65,71 @@ def test_add():
 
 @pytest.mark.actions_wrapped_add
 def test_wrapped_add_none_none():
-    data = {
-        f"common_labels": {
+    alert_group = AlertGroup.construct(
+        common_labels={
             "tim": "schwenke",
             "hans": "meier",
         },
-        "alerts": [
-            {
-                "labels": {
+        alerts=[
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                     "hans": "meier",
                     "ronald": "fritz",
                     "ute": "schneider",
                 }
-            },
-            {
-                "labels": {
+            ),
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                     "hans": "meier",
                     "furz": "ernst",
                 }
-            },
+            ),
         ],
+    )
+
+    actions.wrapped_add(None, None, alert_group)
+
+    assert alert_group.common_labels == {
+        "tim": "schwenke",
+        "hans": "meier",
     }
-    a1 = None
-    a2 = None
-    actions.wrapped_add(a1, a2, data)
-    assert data == {
-        f"common_labels": {
-            "tim": "schwenke",
-            "hans": "meier",
-        },
-        "alerts": [
-            {
-                "labels": {
-                    "tim": "schwenke",
-                    "hans": "meier",
-                    "ronald": "fritz",
-                    "ute": "schneider",
-                }
-            },
-            {
-                "labels": {
-                    "tim": "schwenke",
-                    "hans": "meier",
-                    "furz": "ernst",
-                }
-            },
-        ],
+    assert alert_group.alerts[0].labels == {
+        "tim": "schwenke",
+        "hans": "meier",
+        "ronald": "fritz",
+        "ute": "schneider",
+    }
+    assert alert_group.alerts[1].labels == {
+        "tim": "schwenke",
+        "hans": "meier",
+        "furz": "ernst",
     }
 
 
 @pytest.mark.actions_wrapped_add
 def test_wrapped_add_a1_none():
-    data = {
-        f"common_labels": {
+    alert_group = AlertGroup.construct(
+        common_labels={
             "tim": "schwenke",
         },
-        "alerts": [
-            {
-                "labels": {
+        alerts=[
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                     "ute": "meier",
                     "frank": "sohn",
                 }
-            },
-            {
-                "labels": {
+            ),
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                 }
-            },
+            ),
         ],
-    }
+    )
+
     a1 = Add(
         labels={
             "tim": "schwonkel",
@@ -149,52 +138,47 @@ def test_wrapped_add_a1_none():
         }
     )
     a2 = None
-    actions.wrapped_add(a1, a2, data)
-    assert data == {
-        "common_labels": {
-            "tim": "schwenke",
-            "frank": "sohn",
-        },
-        "alerts": [
-            {
-                "labels": {
-                    "tim": "schwenke",
-                    "ute": "meier",
-                    "frank": "sohn",
-                }
-            },
-            {
-                "labels": {
-                    "tim": "schwenke",
-                    "ute": "freier",
-                    "frank": "sohn",
-                }
-            },
-        ],
+
+    actions.wrapped_add(a1, a2, alert_group)
+
+    assert alert_group.common_labels == {
+        "tim": "schwenke",
+        "frank": "sohn",
+    }
+    assert alert_group.alerts[0].labels == {
+        "tim": "schwenke",
+        "ute": "meier",
+        "frank": "sohn",
+    }
+    assert alert_group.alerts[1].labels == {
+        "tim": "schwenke",
+        "ute": "freier",
+        "frank": "sohn",
     }
 
 
 @pytest.mark.actions_wrapped_add
 def test_wrapped_add_none_a2():
-    data = {
-        f"common_labels": {
+    alert_group = AlertGroup.construct(
+        common_labels={
             "tim": "schwenke",
         },
-        "alerts": [
-            {
-                "labels": {
+        alerts=[
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                     "ute": "meier",
                     "frank": "sohn",
                 }
-            },
-            {
-                "labels": {
+            ),
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                 }
-            },
+            ),
         ],
-    }
+    )
+
     a2 = Add(
         labels={
             "tim": "schwonkel",
@@ -203,52 +187,47 @@ def test_wrapped_add_none_a2():
         }
     )
     a1 = None
-    actions.wrapped_add(a1, a2, data)
-    assert data == {
-        "common_labels": {
-            "tim": "schwenke",
-            "frank": "sohn",
-        },
-        "alerts": [
-            {
-                "labels": {
-                    "tim": "schwenke",
-                    "ute": "meier",
-                    "frank": "sohn",
-                }
-            },
-            {
-                "labels": {
-                    "tim": "schwenke",
-                    "ute": "freier",
-                    "frank": "sohn",
-                }
-            },
-        ],
+
+    actions.wrapped_add(a1, a2, alert_group)
+
+    assert alert_group.common_labels == {
+        "tim": "schwenke",
+        "frank": "sohn",
+    }
+    assert alert_group.alerts[0].labels == {
+        "tim": "schwenke",
+        "ute": "meier",
+        "frank": "sohn",
+    }
+    assert alert_group.alerts[1].labels == {
+        "tim": "schwenke",
+        "ute": "freier",
+        "frank": "sohn",
     }
 
 
 @pytest.mark.actions_wrapped_add
 def test_wrapped_add_a1_a2():
-    data = {
-        f"common_labels": {
+    alert_group = AlertGroup.construct(
+        common_labels={
             "tim": "schwenke",
         },
-        "alerts": [
-            {
-                "labels": {
+        alerts=[
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                     "ute": "meier",
                     "frank": "sohn",
                 }
-            },
-            {
-                "labels": {
+            ),
+            Alert.construct(
+                labels={
                     "tim": "schwenke",
                 }
-            },
+            ),
         ],
-    }
+    )
+
     a1 = Add(
         labels={
             "tim": "schwonkel",
@@ -261,28 +240,22 @@ def test_wrapped_add_a1_a2():
             "frank": "sohn",
         }
     )
-    actions.wrapped_add(a1, a2, data)
-    assert data == {
-        "common_labels": {
-            "tim": "schwenke",
-            "frank": "sohn",
-        },
-        "alerts": [
-            {
-                "labels": {
-                    "tim": "schwenke",
-                    "ute": "meier",
-                    "frank": "sohn",
-                }
-            },
-            {
-                "labels": {
-                    "tim": "schwenke",
-                    "ute": "freier",
-                    "frank": "sohn",
-                }
-            },
-        ],
+
+    actions.wrapped_add(a1, a2, alert_group)
+
+    assert alert_group.common_labels == {
+        "tim": "schwenke",
+        "frank": "sohn",
+    }
+    assert alert_group.alerts[0].labels == {
+        "tim": "schwenke",
+        "ute": "meier",
+        "frank": "sohn",
+    }
+    assert alert_group.alerts[1].labels == {
+        "tim": "schwenke",
+        "ute": "freier",
+        "frank": "sohn",
     }
 
 

@@ -1,46 +1,51 @@
-"""
-This module contains the model that is handed over to the templating engine.
-Notice that the API itself does not use this model. Initially the data is
-processed as a nested dictionary.
+"""Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0"""
 
-Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0
-"""
-
-from dataclasses import dataclass
 from datetime import datetime
 
-from fastapi import Request
+from pydantic import BaseModel, Field
+
+# ==============================================================================
 
 
-@dataclass
-class Alert:
+class Alert(BaseModel):
     fingerprint: str
     status: str
-    starts_at: datetime
-    ends_at: datetime
-    generator_url: str
+    starts_at: datetime = Field(alias="startsAt")
+    ends_at: datetime = Field(alias="endsAt")
+    generator_url: str = Field(alias="generatorURL")
     labels: dict[str, str]
     annotations: dict[str, str]
+
+    class Config:
+        extra = "allow"
+
+
+class AlertGroup(BaseModel):
+    receiver: str
+    status: str
+    external_url: str = Field(alias="externalURL")
+    version: str
+    group_key: str = Field(alias="groupKey")
+    truncated_alerts: int = Field(alias="truncatedAlerts", default=0)
+    group_labels: dict[str, str] = Field(alias="groupLabels")
+    common_labels: dict[str, str] = Field(alias="commonLabels")
+    common_annotations: dict[str, str] = Field(alias="commonAnnotations")
+    alerts: list[Alert]
+
+    class Config:
+        extra = "allow"
+
+
+# ==============================================================================
+
+
+class EnhancedAlert(Alert):
     specific_annotations: dict[str, str]
     specific_labels: dict[str, str]
 
-    def __post_init__(self):
-        if not isinstance(self.starts_at, str):
-            self.starts_at = datetime.strptime(self.starts_at[:19], r"%Y-%m-%dT%H:%M:%S")
-        if not isinstance(self.ends_at, str):
-            self.ends_at = datetime.strptime(self.ends_at[:19], r"%Y-%m-%dT%H:%M:%S")
+
+class EnhancedAlertGroup(AlertGroup):
+    pass
 
 
-@dataclass
-class AlertGroup:
-    receiver: str
-    status: str
-    external_url: str
-    version: str
-    group_key: str
-    truncated_alerts: int
-    group_labels: dict[str, str]
-    common_labels: dict[str, str]
-    common_annotations: dict[str, str]
-    request: Request
-    alerts: list[Alert]
+# ==============================================================================

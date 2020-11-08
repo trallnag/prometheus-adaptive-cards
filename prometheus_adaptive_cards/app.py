@@ -6,6 +6,7 @@ import pprint
 from fastapi import FastAPI, Request
 
 from .config import Routing
+from .model import AlertGroup
 from .preprocessing import preprocess
 
 # ==============================================================================
@@ -29,15 +30,16 @@ def setup_routes(app: FastAPI, routing: Routing, route_prefix: str = "/route") -
 
         # ----------------------------------------------------------------------
 
-        def route_handler(request: Request, base64_webhook: str = ""):
-            for alert_group in preprocess(request, routing, route, request.json()):
-                if len(base64_webhook) > 0:
-                    route.webhooks.append(base64.b64decode(base64_webhook))
+        def route_handler(alert_group: AlertGroup, base64_webhook: str = ""):
+            enhanced_alert_groups = preprocess(routing, route, alert_group)
+            # for alert_group in preprocess(routing, route, body):
+            #     if len(base64_webhook) > 0:
+            #         route.webhooks.append(base64.b64decode(base64_webhook))
 
-                print("alert_group")
-                pprint.pprint(alert_group)
-                print("base64_encoded_webhook")
-                pprint.pprint(base64_webhook)
+            #     print("alert_group")
+            #     pprint.pprint(alert_group)
+            #     print("base64_encoded_webhook")
+            #     pprint.pprint(base64_webhook)
 
         # ----------------------------------------------------------------------
 
