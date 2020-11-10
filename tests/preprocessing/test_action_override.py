@@ -12,7 +12,6 @@ from prometheus_adaptive_cards.model import Alert, AlertGroup
 # ==============================================================================
 
 
-@pytest.mark.actions_override
 def test_override():
     alert_group = AlertGroup.construct(
         common_labels={
@@ -64,7 +63,6 @@ def test_override():
 # ==============================================================================
 
 
-@pytest.mark.actions_wrapped_override
 def test_wrapped_override_none_none():
     alert_group = AlertGroup.construct(
         common_labels={
@@ -112,7 +110,6 @@ def test_wrapped_override_none_none():
     }
 
 
-@pytest.mark.actions_wrapped_override
 def test_wrapped_override_a_none():
     alert_group = AlertGroup.construct(
         common_labels={
@@ -162,7 +159,6 @@ def test_wrapped_override_a_none():
     }
 
 
-@pytest.mark.actions_wrapped_override
 def test_wrapped_override_none_b():
     alert_group = AlertGroup.construct(
         common_labels={
@@ -212,7 +208,6 @@ def test_wrapped_override_none_b():
     }
 
 
-@pytest.mark.actions_wrapped_override
 def test_wrapped_override_a_b():
     alert_group = AlertGroup.construct(
         common_labels={

@@ -12,7 +12,6 @@ from prometheus_adaptive_cards.model import Alert, AlertGroup
 # ==============================================================================
 
 
-@pytest.mark.actions_add
 def test_add():
     alert_group = AlertGroup.construct(
         common_labels={
@@ -63,7 +62,6 @@ def test_add():
 # ==============================================================================
 
 
-@pytest.mark.actions_wrapped_add
 def test_wrapped_add_none_none():
     alert_group = AlertGroup.construct(
         common_labels={
@@ -108,7 +106,6 @@ def test_wrapped_add_none_none():
     }
 
 
-@pytest.mark.actions_wrapped_add
 def test_wrapped_add_a1_none():
     alert_group = AlertGroup.construct(
         common_labels={
@@ -157,7 +154,6 @@ def test_wrapped_add_a1_none():
     }
 
 
-@pytest.mark.actions_wrapped_add
 def test_wrapped_add_none_a2():
     alert_group = AlertGroup.construct(
         common_labels={
@@ -206,7 +202,6 @@ def test_wrapped_add_none_a2():
     }
 
 
-@pytest.mark.actions_wrapped_add
 def test_wrapped_add_a1_a2():
     alert_group = AlertGroup.construct(
         common_labels={

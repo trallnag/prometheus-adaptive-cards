@@ -11,7 +11,6 @@ import prometheus_adaptive_cards.config.settings as settings
 # Structured
 
 
-@pytest.mark.settings_structured
 def test_structured_valid(helpers):
     x = settings.Structured(**{"custom_serializer": True, "does_not_exist": 1})
     helpers.print_struct(x)
@@ -28,7 +27,6 @@ def test_structured_valid(helpers):
     assert x.does_not_exist == 1
 
 
-@pytest.mark.settings_structured
 def test_structured_invalid():
     with pytest.raises(ValidationError):
         _ = settings.Structured(**{"custom_serializer": {"lul": 21}})
@@ -38,7 +36,6 @@ def test_structured_invalid():
 # Unstructured
 
 
-@pytest.mark.settings_unstructured
 def test_unstructured_valid(helpers):
     x = settings.Unstructured.construct(**{"colorize": True})
     helpers.print_struct(x)
@@ -51,7 +48,6 @@ def test_unstructured_valid(helpers):
 # Logging
 
 
-@pytest.mark.settings_logging
 def test_logging(helpers):
     x = settings.Logging(**{"level": "ERROR", "structured": {"custom_serializer": True}})
     helpers.print_struct(x)
@@ -65,7 +61,6 @@ def test_logging(helpers):
 # Server
 
 
-@pytest.mark.settings_server
 def test_server():
     x = settings.Server.construct()
     assert x.host == "127.0.0.1"
@@ -76,7 +71,6 @@ def test_server():
 # Remove
 
 
-@pytest.mark.settings_remove
 def test_remove_valid_without_re(helpers):
     x = settings.Remove.construct(
         **{
@@ -90,7 +84,6 @@ def test_remove_valid_without_re(helpers):
     assert len(x.labels) == 2
 
 
-@pytest.mark.settings_remove
 def test_remove_valid_without_re_with_casting(helpers):
     x = settings.Remove(
         **{
@@ -105,7 +98,6 @@ def test_remove_valid_without_re_with_casting(helpers):
     assert len(x.labels) == 2
 
 
-@pytest.mark.settings_remove
 def test_remove_invalid_without_re():
     with pytest.raises(ValidationError):
         _ = settings.Remove(
@@ -116,7 +108,6 @@ def test_remove_invalid_without_re():
         )
 
 
-@pytest.mark.settings_remove
 def test_remove_valid_re(helpers):
     x = settings.Remove.construct(
         **{
@@ -137,7 +128,6 @@ def test_remove_valid_re(helpers):
     assert isinstance(x.re_annotations[0], Pattern)
 
 
-@pytest.mark.settings_remove
 def test_remove_default():
     x = settings.Remove.construct()
     assert x == {
@@ -152,7 +142,6 @@ def test_remove_default():
 # Add
 
 
-@pytest.mark.settings_add
 def test_add_valid(helpers):
     x = settings.Add(
         **{
@@ -172,7 +161,6 @@ def test_add_valid(helpers):
         x.annotations.foo == "bar"
 
 
-@pytest.mark.settings_add
 def test_add_default():
     x = settings.Add.construct()
     assert x == {
@@ -185,7 +173,6 @@ def test_add_default():
 # Override
 
 
-@pytest.mark.settings_override
 def test_override_valid(helpers):
     x = settings.Override.construct(
         **{
@@ -205,7 +192,6 @@ def test_override_valid(helpers):
         x.annotations.foo == "bar"
 
 
-@pytest.mark.settings_override
 def test_override_default():
     x = settings.Override.construct()
     assert x == {
@@ -218,14 +204,12 @@ def test_override_default():
 # SplitBy
 
 
-@pytest.mark.settings_split_by
 def test_split_by_none():
     route = settings.Route(**{"name": "name", "split_by": None})
 
     assert route.split_by is None
 
 
-@pytest.mark.settings_split_by
 def test_split_by_annotation():
     route = settings.Route(
         **{
@@ -240,7 +224,6 @@ def test_split_by_annotation():
     assert isinstance(route.split_by, settings.SplitBy)
 
 
-@pytest.mark.settings_split_by
 def test_split_by_label():
     route = settings.Route(
         **{
@@ -255,7 +238,6 @@ def test_split_by_label():
     assert isinstance(route.split_by, settings.SplitBy)
 
 
-@pytest.mark.settings_split_by
 def test_split_by_invalid():
     with pytest.raises(ValidationError):
         _ = settings.Route(
@@ -273,7 +255,6 @@ def test_split_by_invalid():
 # Target
 
 
-@pytest.mark.settings_target
 def test_target_all_none():
     target = settings.Target()
     assert target.url is None
@@ -282,7 +263,6 @@ def test_target_all_none():
     assert target.url_from_label is None
 
 
-@pytest.mark.settings_target
 def test_target_all_none():
     _ = settings.Target(
         url="http://www.google.com",
@@ -297,13 +277,11 @@ def test_target_all_none():
 # Route
 
 
-@pytest.mark.settings_route
 def test_route_invalid_name():
     with pytest.raises(ValidationError):
         _ = settings.Route(**{"name": "HALLO ROUTE"})
 
 
-@pytest.mark.settings_route
 def test_route_valid(helpers):
     x = settings.Route(
         **{
@@ -321,7 +299,6 @@ def test_route_valid(helpers):
     assert len(x.targets) == 1
 
 
-@pytest.mark.settings_route
 def test_route_actions_none(helpers):
     x = settings.Route(
         **{
@@ -339,7 +316,6 @@ def test_route_actions_none(helpers):
 # Routing
 
 
-@pytest.mark.settings_routing
 def test_routing(helpers):
     x = settings.Routing(
         **{
@@ -364,7 +340,6 @@ def test_routing(helpers):
     assert x.routes[0].remove.annotations[1] == "bar"
 
 
-@pytest.mark.settings_routing
 def test_routing_actions_none(helpers):
     x = settings.Routing()
     helpers.print_struct(x)
@@ -374,7 +349,6 @@ def test_routing_actions_none(helpers):
     assert x.override is None
 
 
-@pytest.mark.settings_routing
 def test_routing_invalid_non_unique_route_names():
     with pytest.raises(ValidationError):
         _ = settings.Routing(
@@ -397,7 +371,6 @@ def test_routing_invalid_non_unique_route_names():
 # Settings
 
 
-@pytest.mark.settings
 def test_settings_empty(helpers):
     x = settings.Settings()
     helpers.print_struct(x)
@@ -409,7 +382,6 @@ def test_settings_empty(helpers):
 # settings_singleton
 
 
-@pytest.mark.settings_singleton
 def test_settings_singleton_valid_defaults_only(helpers):
     x = settings.settings_singleton(refresh=True, cli_args=["--config_file", "/"])
 
@@ -420,7 +392,6 @@ def test_settings_singleton_valid_defaults_only(helpers):
     assert x.routing.routes[0].name == "generic"
 
 
-@pytest.mark.settings_singleton
 def test_settings_singleton_valid_with_env_vars(helpers):
     x = settings.settings_singleton(
         refresh=True,
@@ -436,7 +407,6 @@ def test_settings_singleton_valid_with_env_vars(helpers):
     assert x.server.port == 1
 
 
-@pytest.mark.settings_singleton
 def test_settings_singleton_valid_with_cli_args(helpers):
     x = settings.settings_singleton(
         refresh=True,
@@ -454,7 +424,6 @@ def test_settings_singleton_valid_with_cli_args(helpers):
     assert x.server.port == 12
 
 
-@pytest.mark.settings_singleton
 def test_settings_singleton_valid_with_cli_args_and_env(helpers):
     x = settings.settings_singleton(
         refresh=True,
@@ -473,7 +442,6 @@ def test_settings_singleton_valid_with_cli_args_and_env(helpers):
     assert x.server.port == 12
 
 
-@pytest.mark.settings_singleton
 def test_settings_singleton_big_example(helpers, tmp_path):
     file_content = """\
     logging:
@@ -520,7 +488,6 @@ def test_settings_singleton_big_example(helpers, tmp_path):
 # ensure_generic_route_exists
 
 
-@pytest.mark.settings_ensure_generic_route_exists
 def test_ensure_generic_route_exists():
     x = settings.settings_singleton(refresh=True)
     settings._ensure_generic_route_exists(x)
@@ -529,7 +496,6 @@ def test_ensure_generic_route_exists():
     assert len(x.routing.routes) == 1
 
 
-@pytest.mark.settings_ensure_generic_route_exists
 def test_ensure_generic_route_exists_skip(tmp_path):
     file_content = """\
     routing:

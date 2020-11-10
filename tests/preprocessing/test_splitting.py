@@ -8,7 +8,6 @@ from prometheus_adaptive_cards.model import Alert, AlertGroup
 # ==============================================================================
 
 
-@pytest.mark.splitting_group_alerts
 def test_group_alerts_single_alert():
     list_of_alert_lists = splitting._group_alerts(
         "annotations", "foo", [Alert.construct(annotations={"foo": "bar"})]
@@ -29,7 +28,6 @@ def test_group_alerts_single_alert():
     assert list_of_alert_lists[0][0] == Alert.construct(labels={"foo": "bar"})
 
 
-@pytest.mark.splitting_group_alerts
 def test_group_alerts(helpers):
     alerts = [
         Alert.construct(
@@ -103,7 +101,6 @@ def test_group_alerts(helpers):
 # ==============================================================================
 
 
-@pytest.mark.splitting_create_alert_group
 def test_create_alert_group_single_alert(helpers):
     base = AlertGroup.construct(
         **{
@@ -161,7 +158,6 @@ def test_create_alert_group_single_alert(helpers):
     assert alert_group.group_labels == {}
 
 
-@pytest.mark.splitting_create_alert_group
 def test_create_data_dict_two_alerts(caplog, helpers):
     base = AlertGroup.construct(
         **{
@@ -218,7 +214,6 @@ def test_create_data_dict_two_alerts(caplog, helpers):
 # ==============================================================================
 
 
-@pytest.mark.splitting_split
 def test_split(caplog, helpers):
     alert_group = AlertGroup.construct(
         **{

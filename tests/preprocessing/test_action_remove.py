@@ -12,7 +12,6 @@ from prometheus_adaptive_cards.model import Alert, AlertGroup
 # ==============================================================================
 
 
-@pytest.mark.actions_remove
 def test_remove():
     target = "labels"
     keys = ["tim", "hans", "ute", "furz", "soda"]
@@ -56,7 +55,6 @@ def test_remove():
 # ==============================================================================
 
 
-@pytest.mark.actions_remove_re
 def test_remove_re():
     target = "labels"
     keys = [re.compile("^(tim|hans|ute|furz|soda)$")]
@@ -100,7 +98,6 @@ def test_remove_re():
 # ==============================================================================
 
 
-@pytest.mark.actions_wrapped_remove
 def test_wrapped_remove_none_none():
     alert_group = AlertGroup.construct(
         common_labels={
@@ -149,7 +146,6 @@ def test_wrapped_remove_none_none():
     }
 
 
-@pytest.mark.actions_wrapped_remove
 def test_wrapped_remove_a_none():
     alert_group = AlertGroup.construct(
         common_labels={
@@ -185,7 +181,6 @@ def test_wrapped_remove_a_none():
     assert alert_group.alerts[1].labels == {}
 
 
-@pytest.mark.actions_wrapped_remove
 def test_wrapped_remove_none_b():
     alert_group = AlertGroup.construct(
         common_labels={
@@ -221,7 +216,6 @@ def test_wrapped_remove_none_b():
     assert alert_group.alerts[1].labels == {}
 
 
-@pytest.mark.actions_wrapped_remove
 def test_wrapped_remove_a_b():
     alert_group = AlertGroup.construct(
         common_annotations={},
