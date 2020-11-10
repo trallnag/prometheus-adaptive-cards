@@ -22,7 +22,10 @@ class Structured(BaseModel):
 
 
 class Unstructured(BaseModel):
-    fmt: str = "<green>{time:HH:mm:ss}</green> <level>{level}</level> <cyan>{function}</cyan> {message} <dim>{extra}</dim>"
+    fmt: str = (
+        "<green>{time:HH:mm:ss}</green> <level>{level}</level> "
+        "<cyan>{module}:{function}:{line}</cyan> {message} <dim>{extra}</dim>"
+    )
     colorize: bool = True
 
 
