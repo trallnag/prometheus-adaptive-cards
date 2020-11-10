@@ -93,14 +93,11 @@ def _setup_sink(
     unstructured_colorize: bool,
 ) -> int:
     """
-    Adds and configures the sink Loguru should use. The default sink is removed.
+    Adds and configures the sink Loguru should use. The default sink is not removed.
 
     Returns:
         int: Handler / Sink id. Can be passed to `remove()`.
     """
-
-    # Remove default handler
-    logger.remove()
 
     if format == "structured":
         if structured_custom_serializer:

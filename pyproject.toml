@@ -35,6 +35,7 @@ minversion = "6.1"
 markers = [
     "slow: mark a test as slow in execution"
 ]
+log_format = "%(message)s"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

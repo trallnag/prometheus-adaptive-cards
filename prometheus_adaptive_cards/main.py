@@ -15,6 +15,7 @@ def main(cli_args: list[str], env: dict[str, str]):
 
     settings = settings_singleton(cli_args, env, refresh=True)
 
+    logger.remove()
     setup_logging(logging_settings=settings.logging)
 
     logger.bind(settings=settings.dict()).info("Running PromAC with attached settings.")
