@@ -4,6 +4,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from prometheus_adaptive_cards.config import Target
+
 # ==============================================================================
 
 
@@ -45,7 +47,7 @@ class EnhancedAlert(Alert):
 
 
 class EnhancedAlertGroup(AlertGroup):
-    pass
+    targets: list[Target]
 
 
 # ==============================================================================

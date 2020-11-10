@@ -8,5 +8,6 @@ from .settings import (
     Route,
     Routing,
     Settings,
+    Target,
     settings_singleton,
 )

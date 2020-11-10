@@ -49,7 +49,7 @@ def preprocess(
 
         enhanced_alert_group = EnhancedAlertGroup.construct(**alert_group.dict())
         enhanced_alert_group.alerts = enhanced_alerts
-
+        enhanced_alert_group.targets = [target.copy() for target in route.targets]
         enhanced_alert_groups.append(enhanced_alert_group)
 
     return enhanced_alert_groups

@@ -270,6 +270,30 @@ def test_split_by_invalid():
 
 
 # ==============================================================================
+# Target
+
+
+@pytest.mark.settings_target
+def test_target_all_none():
+    target = settings.Target()
+    assert target.url is None
+    assert target.expansion_url is None
+    assert target.url_from_annotation is None
+    assert target.url_from_label is None
+
+
+@pytest.mark.settings_target
+def test_target_all_none():
+    _ = settings.Target(
+        url="http://www.google.com",
+        expansion_url=r"http://blablabla.com/q={something}",
+        url_from_annotation="blablaba",
+        url_from_label="lul",
+    )
+    assert True
+
+
+# ==============================================================================
 # Route
 
 
@@ -286,7 +310,7 @@ def test_route_valid(helpers):
             "name": "generic_fefef-fef",
             "add": {"labels": {"new": "label"}},
             "remove": {"annotations": ["foo", "bar"]},
-            "webhooks": ["https://www.googleapis.com/"],
+            "targets": [{"url": "http://www.google.com"}],
         }
     )
     helpers.print_struct(x)
@@ -294,7 +318,7 @@ def test_route_valid(helpers):
     assert x.name == "generic_fefef-fef"
     assert x.add.labels["new"] == "label"
     assert x.remove.annotations[1] == "bar"
-    assert len(x.webhooks) == 1
+    assert len(x.targets) == 1
 
 
 @pytest.mark.settings_route

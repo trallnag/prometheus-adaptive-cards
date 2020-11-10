@@ -72,6 +72,13 @@ class SplitBy(BaseModel):
 _PATTERN_FOR_NAME = re.compile(r"^[a-z0-9_\-]*$")
 
 
+class Target(BaseModel):
+    url: Optional[AnyUrl]
+    expansion_url: Optional[str]
+    url_from_label: Optional[str]
+    url_from_annotation: Optional[str]
+
+
 class Route(BaseModel):
     name: str
     catch: bool = True
@@ -81,7 +88,7 @@ class Route(BaseModel):
     split_by: Optional[SplitBy]
     extract_webhooks: list[str] = []
     extract_webhooks_re: list[Pattern] = []
-    webhooks: list[AnyUrl] = []
+    targets: list[Target] = []
 
     @validator("name")
     def validate_name(cls, v):  # noqa
