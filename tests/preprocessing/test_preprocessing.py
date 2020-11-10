@@ -37,56 +37,6 @@ def test_preprocess(helpers):
         ),
     )
 
-    payload = {
-        "receiver": "generic",
-        "status": "firing",
-        "alerts": [
-            {
-                "status": "firing",
-                "labels": {
-                    "heinz": "meier",
-                    "__meta": "x",
-                    "severity": "warning",
-                    "yung": "barn",
-                },
-                "annotations": {
-                    "vw": "x",
-                    "audi": "x",
-                    "yung": "barn",
-                },
-                "startsAt": "2020-11-03T17:51:36.14925565Z",
-                "endsAt": "0001-01-01T00:00:00Z",
-                "generatorURL": "http://9e6d80bea9ef:9",
-                "fingerprint": "d57ff78af6ac95e8",
-            },
-            {
-                "status": "firing",
-                "labels": {
-                    "heinz": "meier",
-                    "simon": "fart",
-                    "__meta": "x",
-                    "severity": "warning",
-                },
-                "annotations": {
-                    "vw": "x",
-                },
-                "startsAt": "2020-11-03T17:51:36.14925565Z",
-                "endsAt": "0001-01-01T00:00:00Z",
-                "generatorURL": "http://9e6d80bea9ef:9",
-                "fingerprint": "d57ff78af6ac95e8",
-            },
-        ],
-        "groupLabels": {"alertname": "WhatEver"},
-        "commonLabels": {"heinz": "meier", "__meta": "x", "severity": "warning"},
-        "commonAnnotations": {
-            "vw": "x",
-        },
-        "externalURL": "http://1217896f2a1d:9093",
-        "version": "4",
-        "groupKey": '{}:{alertname="WhatEver"}',
-        "truncatedAlerts": 0,
-    }
-
     alert_group = AlertGroup.construct(
         group_labels={"alertname": "WhatEver"},
         common_labels={"heinz": "meier", "__meta": "x", "severity": "warning"},

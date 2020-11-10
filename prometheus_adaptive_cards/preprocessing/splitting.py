@@ -1,7 +1,6 @@
 """Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0"""
 
-import copy
-from typing import Any, Literal
+from typing import Literal
 
 from loguru import logger
 
@@ -78,5 +77,6 @@ def _create_alert_group(base: AlertGroup, alerts: list[Alert]) -> AlertGroup:
 def split(
     target: Literal["annotation", "label"], by: str, alert_group: AlertGroup
 ) -> list[AlertGroup]:
+    logger.bind(target=target, by=by).debug("Try to split given alert group.")
     grouped_alerts = _group_alerts(f"{target}s", by, alert_group.alerts)
     return [_create_alert_group(alert_group, alerts) for alerts in grouped_alerts]

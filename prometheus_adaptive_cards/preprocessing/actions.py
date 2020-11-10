@@ -2,9 +2,7 @@
 
 from typing import Literal, Optional, Pattern
 
-from loguru import logger
-
-from prometheus_adaptive_cards.config import Add, Override, Remove, Route, Routing
+from prometheus_adaptive_cards.config import Add, Override, Remove
 from prometheus_adaptive_cards.model import AlertGroup
 
 # ==============================================================================

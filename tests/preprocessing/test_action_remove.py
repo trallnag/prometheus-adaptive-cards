@@ -1,12 +1,9 @@
 """Copyright © 2020 Tim Schwenke - Licensed under the Apache License 2.0"""
 
-import copy
 import re
 
-import pytest
-
 import prometheus_adaptive_cards.preprocessing.actions as actions
-from prometheus_adaptive_cards.config.settings import Remove, Route, Routing
+from prometheus_adaptive_cards.config.settings import Remove
 from prometheus_adaptive_cards.model import Alert, AlertGroup
 
 # ==============================================================================

@@ -12,7 +12,6 @@ def add_specific(alert_group: AlertGroup) -> None:
             for name in set(alert.annotations) - set(alert_group.common_annotations)
         }
 
-        labels = alert.labels
         alert.specific_labels = {
             name: alert.labels[name]
             for name in set(alert.labels) - set(alert_group.common_labels)

@@ -263,7 +263,7 @@ def test_target_all_none():
     assert target.url_from_label is None
 
 
-def test_target_all_none():
+def test_target_all_set():
     _ = settings.Target(
         url="http://www.google.com",
         expansion_url=r"http://blablabla.com/q={something}",
