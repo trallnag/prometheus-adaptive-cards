@@ -34,3 +34,48 @@ def test_extract_url_expansion_url_valid():
         common_labels={"namespace": "hallo"},
     )
     assert url == "hallo/hallo/fefe"
+
+
+def test_extract_url_expansion_url_invalid():
+    url = utils.extract_url(
+        target=Target.construct(expansion_url="hallo/{commond_labels[namespace]}/fefe"),
+        common_labels={"namespace": "hallo"},
+    )
+    assert url is None
+
+
+def test_extract_url_from_label_valid():
+    url = utils.extract_url(
+        target=Target.construct(url="does not matter", url_from_label="pickme"),
+        common_labels={"pickme": "hallo"},
+    )
+    assert url == "hallo"
+
+
+def test_extract_url_from_label_invalid():
+    url = utils.extract_url(
+        target=Target.construct(url="does not matter", url_from_label="doesnotexist"),
+        common_labels={"pickme": "hallo"},
+    )
+    assert url == "does not matter"
+
+
+def test_extract_url_from_annotation_valid():
+    url = utils.extract_url(
+        target=Target.construct(url="does not matter", url_from_annotation="pickme"),
+        common_annotations={"pickme": "hallo"},
+    )
+    assert url == "hallo"
+
+
+def test_extract_url_from_annotation_invalid():
+    url = utils.extract_url(
+        target=Target.construct(
+            url="does not matter", url_from_annotation="doesnotexist"
+        ),
+        common_annotations={"pickme": "hallo"},
+    )
+    assert url == "does not matter"
+
+
+# ==============================================================================

@@ -74,7 +74,8 @@ def extract_url(  # noqa: C901
     common_labels: dict[str, str] = {},
     common_annotations: dict[str, str] = {},
 ) -> Optional[str]:
-    """Goes through all target fields and tries to extract URL.
+    """
+    Goes through all target fields and tries to extract URL.
 
     1. expansion_url
     2. url_from_label
@@ -106,24 +107,24 @@ def extract_url(  # noqa: C901
                 common_labels=common_labels, common_annotations=common_annotations
             )
         except KeyError:
-            local_logger.error(
+            local_logger.opt(exception=True).error(
                 "Expansion of given string failed. Continue with other options."
             )
 
     if target.url_from_label:
         try:
-            return common_annotations[target.url_from_label]
+            return common_labels[target.url_from_label]
         except KeyError:
-            local_logger.error(
+            local_logger.opt(exception=True).error(
                 "Given label not found in common labels. Continue with other options."
             )
 
     if target.url_from_annotation:
         try:
-            return common_annotations[target.url_furl_from_annotationrom_label]
+            return common_annotations[target.url_from_annotation]
         except KeyError:
-            local_logger.error(
-                "Given label not found in common annotations. Continue with other options."
+            local_logger.opt(exception=True).error(
+                "Given annotation not found in common annotations. Continue with other options."
             )
 
     if target.url:
