@@ -50,6 +50,11 @@ class Server(BaseModel):
 # Routing
 
 
+class Sending(BaseModel):
+    retries: int = 3
+    backoff_factor: float = 0.3
+
+
 class Remove(BaseModel):
     annotations: list[str] = []
     labels: list[str] = []
@@ -80,6 +85,7 @@ class Target(BaseModel):
     expansion_url: Optional[str]
     url_from_label: Optional[str]
     url_from_annotation: Optional[str]
+    sending: Optional[Sending]
 
 
 class Route(BaseModel):
@@ -92,6 +98,7 @@ class Route(BaseModel):
     extract_webhooks: list[str] = []
     extract_webhooks_re: list[Pattern] = []
     targets: list[Target] = []
+    sending: Optional[Sending]
 
     @validator("name")
     def validate_name(cls, v):  # noqa
@@ -106,6 +113,7 @@ class Routing(BaseModel):
     add: Optional[Add]
     override: Optional[Override]
     routes: list[Route] = []
+    sending: Optional[Sending]
 
     @validator("routes")
     def validate_routes_unique(cls, v):  # noqa
