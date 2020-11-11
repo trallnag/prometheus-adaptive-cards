@@ -53,6 +53,8 @@ class Server(BaseModel):
 class Sending(BaseModel):
     retries: int = 3
     backoff_factor: float = 0.3
+    handle_failure: bool = True
+    fallback_url: Optional[str]
 
 
 class Remove(BaseModel):

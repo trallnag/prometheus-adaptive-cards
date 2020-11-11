@@ -4,5 +4,5 @@ from prometheus_adaptive_cards.config import Target
 
 
 class Payload(BaseModel):
-    data: Json
+    data: dict
     targets: list[Target]

@@ -282,6 +282,8 @@ def test_sending_default():
     x = settings.Sending()
     assert x.retries is not None
     assert x.backoff_factor is not None
+    assert x.fallback_url is None
+    assert x.handle_failure is True
 
 
 # ==============================================================================

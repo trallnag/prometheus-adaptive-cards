@@ -26,6 +26,7 @@ rope = "^0.18.0"
 isort = "^5.6.4"
 prettyprinter = "^0.18.0"
 mkdocs = "^1.1.2"
+requests-mock = "^1.8.0"
 
 [tool.black]
 line-length = 90
