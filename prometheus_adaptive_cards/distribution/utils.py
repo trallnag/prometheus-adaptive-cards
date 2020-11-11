@@ -29,21 +29,6 @@ def requests_retry_session(
     Returns:
         [type]: [description]
 
-    Usage Example:
-
-    ```python
-    response = requests_retry_session().get('https://www.peterbe.com/')
-    print(response.status_code)
-
-    s = requests.Session()
-    s.auth = ('user', 'pass')
-    s.headers.update({'x-test': 'true'})
-
-    response = requests_retry_session(session=s).get(
-        'https://www.peterbe.com'
-    )
-    ```
-
     Licensing and attribution: Found [here](https://www.peterbe.com/plog/best-practice-with-retries-with-requests).
     No license. All attributions go to Peter Bengtsson.
     """

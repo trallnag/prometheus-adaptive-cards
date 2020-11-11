@@ -4,7 +4,6 @@ import time
 
 import pytest
 import requests
-from requests import ConnectionError
 
 from prometheus_adaptive_cards.config.settings import Target
 from prometheus_adaptive_cards.distribution import utils
@@ -19,10 +18,15 @@ def test_requests_retry_session():
     s.headers.update({"x-test": "true"})
 
     t0 = time.time()
-    with pytest.raises(ConnectionError):
-        _ = utils.requests_retry_session(session=s).get("https://www.peterbe.com")
+
+    try:
+        _ = utils.requests_retry_session(session=s, retries=3, backoff_factor=0.05).get("http://localhost:9999")
+    except Exception as x:
+        print('It failed :(', x.__class__.__name__)
+
     t1 = time.time()
-    assert t1 - t0 >= 1.8
+
+    assert t1 - t0 >= 0.1
 
 
 # ==============================================================================
