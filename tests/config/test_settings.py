@@ -261,7 +261,6 @@ def test_target_all_none():
     assert target.expansion_url is None
     assert target.url_from_annotation is None
     assert target.url_from_label is None
-    assert target.sending is None
 
 
 def test_target_all_set():
@@ -282,8 +281,8 @@ def test_sending_default():
     x = settings.Sending()
     assert x.retries is not None
     assert x.backoff_factor is not None
-    assert x.fallback_url is None
-    assert x.handle_failure is True
+    assert x.notify_url is None
+    assert x.notify_about_send_failure is True
 
 
 # ==============================================================================
@@ -352,7 +351,7 @@ def test_routing(helpers):
     assert x.add.labels["new"] == "label"
     assert x.remove.annotations[1] == "bar"
     assert x.routes[0].remove.annotations[1] == "bar"
-    assert x.sending is None
+    assert x.sending is not None
 
 
 def test_routing_actions_none(helpers):

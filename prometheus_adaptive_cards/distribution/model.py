@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Json
+from pydantic import BaseModel
 
 from prometheus_adaptive_cards.config import Target
 

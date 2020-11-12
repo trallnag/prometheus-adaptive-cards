@@ -20,9 +20,11 @@ def test_requests_retry_session():
     t0 = time.time()
 
     try:
-        _ = utils.requests_retry_session(session=s, retries=3, backoff_factor=0.05).get("http://localhost:9999")
+        _ = utils.requests_retry_session(session=s, retries=3, backoff_factor=0.05).get(
+            "http://localhost:9999"
+        )
     except Exception as x:
-        print('It failed :(', x.__class__.__name__)
+        print("It failed :(", x.__class__.__name__)
 
     t1 = time.time()
 

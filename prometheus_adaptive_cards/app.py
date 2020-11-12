@@ -5,6 +5,7 @@ import base64
 from fastapi import FastAPI
 
 from .config import Routing, Target
+from .distribution import send
 from .model import AlertGroup
 from .preprocessing import preprocess
 
@@ -32,20 +33,18 @@ def setup_routes(app: FastAPI, routing: Routing, route_prefix: str = "/route") -
         def route_handler(alert_group: AlertGroup, b64_webhook: str = ""):
             route.targets.append(Target.construct(url=base64.b64decode(b64_webhook)))
 
+            responses = []
+
             enhanced_alert_groups = preprocess(routing, route, alert_group)
             for enhanced_alert_group in enhanced_alert_groups:
-                # payloads = template(enhanced_alert_group)
-                # send(payloads)
-                pass
-
-            # for alert_group in preprocess(routing, route, body):
-            #     if len(base64_webhook) > 0:
-            #         route.webhooks.append(base64.b64decode(base64_webhook))
-
-            #     print("alert_group")
-            #     pprint.pprint(alert_group)
-            #     print("base64_encoded_webhook")
-            #     pprint.pprint(base64_webhook)
+                payloads, error_parser = template(enhanced_alert_group)
+                responses.append(
+                    send(
+                        payloads=payloads,
+                        sending=route.sending or routing.sending,
+                        error_parser=error_parser,
+                    )
+                )
 
         # ----------------------------------------------------------------------
 

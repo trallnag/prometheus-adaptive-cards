@@ -9,7 +9,7 @@ import re
 from typing import Literal, Optional, Pattern
 
 from loguru import logger
-from pydantic import AnyUrl, BaseModel, ValidationError, parse_obj_as, validator
+from pydantic import BaseModel, ValidationError, parse_obj_as, validator
 
 from prometheus_adaptive_cards.config.settings_raw import setup_raw_settings
 
@@ -53,8 +53,8 @@ class Server(BaseModel):
 class Sending(BaseModel):
     retries: int = 3
     backoff_factor: float = 0.3
-    handle_failure: bool = True
-    fallback_url: Optional[str]
+    notify_about_send_failure: bool = True
+    notify_url: Optional[str]
 
 
 class Remove(BaseModel):
@@ -83,11 +83,10 @@ _PATTERN_FOR_NAME = re.compile(r"^[a-z0-9_\-]*$")
 
 
 class Target(BaseModel):
-    url: Optional[AnyUrl]
+    url: Optional[str]
     expansion_url: Optional[str]
     url_from_label: Optional[str]
     url_from_annotation: Optional[str]
-    sending: Optional[Sending]
 
 
 class Route(BaseModel):
@@ -115,7 +114,7 @@ class Routing(BaseModel):
     add: Optional[Add]
     override: Optional[Override]
     routes: list[Route] = []
-    sending: Optional[Sending]
+    sending: Sending = Sending()
 
     @validator("routes")
     def validate_routes_unique(cls, v):  # noqa
