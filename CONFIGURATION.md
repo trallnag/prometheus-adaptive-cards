@@ -26,59 +26,85 @@ By default, PromAC will look for `/etc/promac/promac.yml`. You can override the
 config location with the environment variable `CONFIG_FILE` or CLI argument
 `--config_file`. PromAC also checks for `*.local.*` files. If found, the local
 config will be merged into the main config. Illegal settings will abort the
-program instead of falling back to the defaults. Following rules are defined for
-the following documentation schema.
+program instead of falling back to the defaults. 
 
-* `<<foo, bar>>` marks a set of values to choose from.
-* `<boolean>`, `<string>` and so on mark primitive and complex types.
+Generic placeholders are defined as follows:
+
+* `=`: Assigned default. Field is optional. If all leaves of a branch are optional
+    the branch is optional as well. This is recursive.
+* `<<foo, bar>>`: Set of literals of the type `string` to choose from.
+* `<boolean>`: Boolean that can take the values `true` or `false`.
+* `<string>`: Regular string.
+
+
+
+
+
+* `[]`: Field is optional and may come with a default. If all leaves leaves are
+    optional the branch is optional as well.
+
+
+
+
+
+* `{}`: 
+
+* `<<foo, bar>>`: a set of literals to choose from.
+* `<boolean>`: a boolean that can take the values `true` or `false`.
+* `<filename>`: a valid path in the current working directory.
+* `<int>`: an integer value.
+* `<labelname>`: a string matching the regular expression `[a-zA-Z_][a-zA-Z0-9_]*`.
+* `<labelvalue>`: a string of unicode characters.
+* `<url>`: a valid URL path
+* `<string>`: a regular string
+* `<tmpl_string>`: a string which is template-expanded before usage
+
 * `...` means as many as you want or none at all. Basically a collection.
 * `env_var` means that you can set this via the environment. Inherited.
 * `cli_arg` means that you can set this as a CLI argument. Inherited.
-* `[]` brackets mean that the field is optional (with a default). If all leaves
-    leaves are optional the branch is optional as well.
-* `{}` brackets contain info.
+
+
 
 The schema is split into multiple sections, but they all go into the same file.
 The codified version of the configuration schema can be found [here](./prometheus_adaptive_cards/config/settings.py).
 
 ### Section: `logging`
 
-```txt
-logging: { env_var | cli_arg }
-  [ level: <<DEBUG, INFO, WARNING, ERROR, CRITICAL>> | default = INFO ]
-  [ format: <<structured, unstructured>> | default = structured ]
+Settings related to logging. All fields have the `env_var` and `cli_arg` flag.
+
+```yml
+logging:
+  level: <<DEBUG, INFO, WARNING, ERROR, CRITICAL>> = INFO
+  format: <<structured, unstructured>> = structured
   structured:
-    # By default a custom serializer is used that emits a simpler structured
-    # log than Loguru itself by default.
-    [ custom_serializer: <boolean> | default = true ]
-  unstructured:
-    # Passed on 1:1 to Loguru as the log format. Check Loguru docs.
-    [ fmt: <string> | default = '<green>{time:HH:mm:ss}</green> <level>{level}</level> <cyan>{function}</cyan> {message} <dim>{extra}</dim>' ]
-    [ colorize: <boolean> | default = true ]
+    custom_serializer: <boolean> = true
+    unstructured:
+      fmt: <string> = check source
+      colorize: <boolean> = true
 ```
 
 ### Section: `server`
 
-```txt
-server: { env_var | cli_arg }
-  [ host: <string> | default = '127.0.0.1' ]
-  [ port: <int> | default = 8000 ]
+Settings related PromAC's web server. All fields have the `env_var` and `cli_arg` flag.
 
-  # Passed on to Uvicorn. Notice that this does not lead to Uvicorn redirecting
-  # the requests by removing the root_path. This has to be done by a proxy
-  # of your choice.
-  [ root_path: <string> | default = '' ]
+```yml
+server:
+  host: <string> = '127.0.0.1'
+  port: <int> = 8000
+  root_path: <string> = ''
 ```
 
 ### Section: `routing`
 
-```txt
+Declarative description of PromAC's routing and behaviour.
+
+```yml
 routing:
-  [ remove: <remove> ]
-  [ add: <add> ]
-  [ override: <override> ]
+  remove: <remove> = null
+  add: <add> = null
+  override: <override> = null
   routes:
-    [ - <route> | unique | ... ]
+    - <route> ...
 ```
 
 ### Type: `<route>`
@@ -100,15 +126,25 @@ name: <string>
 # of webhooks for this route.
 [ catch: <boolean> | default = true]
 
+# Values of annotations where the name matches are added to webhooks.
+extract_webhooks:
+    [ - <string> | default = [] | ... ]
+extract_webhooks_re:
+    [ - <regex> | default = [] | ... ]
+
+[ split_by: ]
+    target: <<annotation, label>>
+    value: <string>
+
 # If set, the payload will be split and grouped according to the given label or
 # annotation name. All following steps are done for every group individually.
 # Only one of the following two fields may be not null.
 [ split_by_annotation: <string> | default = ~ ]
 [ split_by_label: <string> | default = ~ ]
 
-[ remove: <remove> ]
-[ add: <add> ]
-[ override: <override> ]
+remove: <remove> = null
+add: <add> = null
+override: <override> = null
 
 webhooks:
   [ - <url> | defaults = [] | ... ]

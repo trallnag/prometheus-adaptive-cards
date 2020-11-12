@@ -36,8 +36,10 @@ def setup_routes(app: FastAPI, routing: Routing, route_prefix: str = "/route") -
             responses = []
 
             enhanced_alert_groups = preprocess(routing, route, alert_group)
+
             for enhanced_alert_group in enhanced_alert_groups:
                 payloads, error_parser = template(enhanced_alert_group)
+                
                 responses.append(
                     send(
                         payloads=payloads,
